@@ -24,3 +24,10 @@ The APK produced by this workflow is a debug APK suitable for direct testing/ins
 npm install
 npm run dev
 ```
+
+
+## GitHub Actions dependency installation
+The workflow deliberately runs `npm install` without npm caching. A committed
+`package-lock.json` is not required for this workflow, and setup-node's npm
+cache is not enabled (it requires a lockfile). The workflow installs packages
+from `package.json` on each build.

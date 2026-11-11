@@ -1,42 +1,53 @@
 name: Build QUIZINOX Android APK
+
 on:
   push:
     branches: [main, master]
   workflow_dispatch:
+
 permissions:
   contents: read
-  actions: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 45
     steps:
-      - name: Checkout
+      - name: Checkout source
         uses: actions/checkout@v4
-      - name: Setup Node
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - name: Install dependencies
-        run: npm install
-      - name: Build offline web app
-        run: npm run build
-      - name: Create Android project
-        run: npx cap add android
-      - name: Sync Capacitor
-        run: npx cap sync android
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
+
+      # Do not enable setup-node's npm cache here: this project intentionally
+      # has no committed package-lock.json, so npm cache setup would fail.
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build offline web app
+        run: npm run build
+
+      - name: Create Android project
+        run: npx cap add android
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
       - name: Build debug APK
         working-directory: android
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
-      - name: Upload APK
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: QUIZINOX-APK
