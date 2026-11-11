@@ -1,0 +1,22 @@
+{
+  "name": "quizinox-offline-android",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "android:init": "cap add android",
+    "android:sync": "cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/core": "^7.4.3",
+    "jspdf": "^3.0.3",
+    "pdfjs-dist": "^5.4.394"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.3",
+    "vite": "^6.4.1"
+  }
+}
