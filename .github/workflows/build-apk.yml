@@ -27,8 +27,6 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      # Do not enable setup-node's npm cache here: this project intentionally
-      # has no committed package-lock.json, so npm cache setup would fail.
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
@@ -40,6 +38,11 @@ jobs:
 
       - name: Sync Capacitor
         run: npx cap sync android
+
+      - name: Generate QUIZINOX launcher icons
+        run: |
+          python3 -m pip install --quiet Pillow
+          python3 scripts/generate_android_icons.py
 
       - name: Build debug APK
         working-directory: android
