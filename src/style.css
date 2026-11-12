@@ -32,3 +32,82 @@
 .review-options>div.review-correct{background:#173b32;color:#8ae2bb;border:1px solid #2e755e}
 .review-options>div.review-wrong{background:#3a222c;color:#ff9ba9;border:1px solid #7b4655}
 @media(max-width:760px){.mode-dialog{padding:23px 17px}.mode-dialog h2{font-size:21px}.mode-choice{padding:12px}.instant-feedback{font-size:10px}}
+
+/* ===== QUIZINOX v2 additions ===== */
+.brandlogo{width:44px;height:44px;border-radius:50%;object-fit:cover;box-shadow:0 8px 26px #5b8cff40}
+.mobile-brand img{width:28px;height:28px;border-radius:50%}
+.hero-logo{width:150px;height:150px;border-radius:50%;box-shadow:0 0 80px #759bff75;position:relative;z-index:1}
+.about-logo{width:84px;height:84px;border-radius:50%;box-shadow:0 10px 40px #6d7cff55}
+.online-state{color:#f3bd62}.online-state i{background:#f3bd62;box-shadow:0 0 10px #f3bd62}
+.online-state.is-online{color:#7edcb3}.online-state.is-online i{background:#4dd6a0;box-shadow:0 0 10px #4dd6a0}
+.amberbg{background:#49391f;color:#f7ce7e}
+.resume-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#1d2c45;border:1px solid #3d5b8a;border-radius:14px;padding:12px 16px;margin-bottom:16px;font-size:12px}
+.resume-bar div{display:flex;gap:8px}
+.mode-dialog{max-height:calc(100vh - 36px);overflow:auto}
+.mode-dialog.wide{width:min(680px,100%)}
+.mode-dialog label{margin-top:12px}
+.dialog-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:16px}
+.danger-btn{background:linear-gradient(135deg,#ff6b81,#e2475f);box-shadow:0 7px 20px #e2475f35}
+.danger-icon{background:#4a2330;color:#ff95a5}
+.danger-choice b{color:#ff9eac}
+.title-actions.row{flex-direction:row!important;flex-wrap:wrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.chip{border:1px solid #2f4363;background:#132036;color:#a9bbd6;border-radius:20px;padding:6px 11px;font-size:10px;font-weight:700}
+.chip.active{background:#2a4775;border-color:#6d95e8;color:#fff}
+/* player */
+.player-wrap{max-width:1100px}
+.player-grid{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:start}
+.player-card h1{white-space:normal;word-break:break-word}
+.answer-text{flex:1;word-break:break-word;line-height:1.5}
+.player-tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;min-height:6px}
+.player-bottom .muted{text-align:center}
+.timer-low{color:#ff8795!important;font-weight:800}
+.palette{position:sticky;top:86px}
+.palette-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;max-height:46vh;overflow:auto;padding:2px}
+.pal{aspect-ratio:1;border-radius:10px;border:1px solid #334764;background:#101b2d;color:#c5d3ea;font-weight:700;font-size:12px}
+.pal.answered,.legend i.answered{background:#1d6b52;border-color:#3cc495;color:#fff}
+.pal.skipped,.legend i.skipped{background:#5a2532;border-color:#d0617a;color:#fff}
+.pal.marked,.legend i.marked{background:#4a3a8a;border-color:#9c85ff;color:#fff}
+.pal.ans-marked,.legend i.ans-marked{background:linear-gradient(135deg,#4a3a8a 50%,#1d6b52 50%);border-color:#9c85ff;color:#fff}
+.pal.right,.legend i.right{background:#1d6b52;border-color:#3cc495;color:#fff}
+.pal.wrongq,.legend i.wrongq{background:#7a2a3b;border-color:#ff7186;color:#fff}
+.legend i.fresh{background:#101b2d;border:1px solid #334764}
+.pal.current{outline:2px solid #8fb0ff;outline-offset:2px}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:14px 0;font-size:9.5px;color:#9fb0c9}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:13px;height:13px;border-radius:4px;display:inline-block;border:1px solid transparent}
+.palette-toggle{display:none}.palette-close{display:none}
+body.in-quiz .mobile-nav{display:none}
+/* pdf studio */
+.engine-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 12px}
+.engine{text-align:left;background:#111e31;border:1px solid #304561;border-radius:12px;padding:11px;color:#e7eefb}
+.engine b{display:block;font-size:12px}.engine small{display:block;font-size:9.5px;color:#9aacc5;margin-top:4px;line-height:1.45}
+.engine.active{border-color:#83a6ff;background:#1f3556;box-shadow:0 0 0 2px #739aff30}
+.file-slots{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.file-slot{display:grid;justify-items:center;gap:4px;padding:14px 8px;border:1px dashed #4a628a;border-radius:12px;background:#0f1a2b;color:#dce6f6}
+.file-slot span{font-size:22px}.file-slot b{font-size:11px}.file-slot small{font-size:9.5px;color:#8fa1bb;word-break:break-all}
+.file-slot[hidden]{display:none}
+.progress.small{height:6px;margin:10px 0 6px}
+.convert-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 8px}
+.convert-stats div{background:#111e31;border:1px solid #2c4060;border-radius:10px;padding:10px;text-align:center}
+.convert-stats strong{display:block;font-size:20px}.convert-stats small{font-size:9px;color:#9aacc5}
+.txt-preview{min-height:180px;max-height:300px;font:11px/1.5 ui-monospace,Menlo,monospace;margin-top:10px;white-space:pre}
+.tool-card.featured{border-color:#4d6fb0;background:linear-gradient(145deg,#1a2b48,#111c2f)}
+.trend{margin-bottom:16px}
+.bars{display:flex;align-items:flex-end;gap:8px;height:140px;padding-top:10px}
+.bar{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px}
+.bar i{width:100%;max-width:34px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,#7ea3ff,#5b6dff)}
+.bar small{font-size:9px;color:#9aacc5}
+@media(max-width:900px){
+ .player-grid{grid-template-columns:1fr}
+ .palette{display:none;position:fixed;inset:auto 0 0 0;top:auto;z-index:30;border-radius:18px 18px 0 0;max-height:75vh;overflow:auto;box-shadow:0 -20px 60px #000b}
+ .player-grid.palette-open .palette{display:block}
+ .palette-toggle,.palette-close{display:inline-block}
+ .palette-grid{grid-template-columns:repeat(6,1fr);max-height:40vh}
+}
+@media(max-width:760px){
+ .player-bottom{flex-wrap:nowrap}.player-bottom .secondary,.player-bottom .primary{padding:10px 12px;white-space:nowrap}
+ .engine-grid,.file-slots{grid-template-columns:1fr}
+ .hero-logo{width:120px;height:120px}
+ .mobile-nav button{min-width:46px}
+}

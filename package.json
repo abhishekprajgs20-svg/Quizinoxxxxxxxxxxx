@@ -1,17 +1,22 @@
 {
   "name": "quizinox-offline-android",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
     "android:init": "cap add android",
-    "android:sync": "cap sync android"
+    "android:sync": "cap sync android",
+    "android:icons": "python3 scripts/generate_android_icons.py"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
+    "@capacitor/app": "^7.0.2",
     "@capacitor/core": "^7.4.3",
+    "@capacitor/filesystem": "^7.1.4",
+    "@capacitor/share": "^7.0.2",
     "jspdf": "^3.0.3",
     "pdfjs-dist": "^5.4.394"
   },

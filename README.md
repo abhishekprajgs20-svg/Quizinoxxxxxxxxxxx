@@ -1,23 +1,37 @@
-# QUIZINOX — Offline Android Quiz App
+# QUIZINOX v2 — Offline + Online Android Quiz App
 
-Telegram-independent, local-first quiz maker/player. The Android build is produced by GitHub Actions.
+Local-first quiz maker/player built from the QUIZ-BOT engines. Works fully offline;
+AI features use the internet only when you start them.
 
-## What works offline
-- Create, edit, duplicate, delete and organize quizzes on the device
-- Play quizzes with timer, shuffle, negative marking and explanations
-- Local results, attempt history and performance analytics
-- Import TXT / JSON / PDF text; export quizzes as JSON/TXT
-- Generate PDF result reports
-- TXT fixer and emoji formatter
-- Local backup / restore
+## Features
+**Offline (no internet needed)**
+- Create, edit, duplicate, delete quizzes · bulk-paste questions
+- Exam mode: **Previous / Next**, **question palette** (jump to any question), mark for review, clear response, per-question timer, submit with unanswered warning
+- Practice mode: instant correct answer + explanation, free navigation
+- Unfinished attempts are saved — resume from the dashboard
+- Results with filters (correct / wrong / unanswered), "Practise mistakes" quiz, PDF report
+- Import TXT / JSON / PDF · Export JSON / TXT (😂 format) / PDF question paper
+- **Coaching PDF → TXT converter**: Any PDF (auto), ForumIAS SFG, Vajiram & Ravi (test + solution), VisionIAS (test + solution)
+- TXT fixer + 😂 emoji formatter (ports of the bot's txtfixer)
+- Backup / restore (merge or replace) · analytics with score trend
 
-## Optional online features
-AI question generation from a topic or PDF and translation require internet and your own Gemini API key. The key is stored only on this device. No key is needed for offline features.
+**Online (optional, your own Gemini key)**
+- AI question generator from a topic or from your notes / PDF (English / Hindi / bilingual)
+- AI translation of any quiz
+- Topbar shows ONLINE / OFFLINE status live
 
-## Build APK
-Push to GitHub. Open **Actions → Build QUIZINOX Android APK** and download the `QUIZINOX-APK` artifact.
+## Build the APK (GitHub)
+1. `python -m pip install requests`
+2. `python upload_to_github.py` → enter repo name, username and a GitHub token (repo + workflow scope)
+3. The script uploads the code, waits for **Actions → Build QUIZINOX Android APK** and downloads `QUIZINOX.apk` next to itself.
 
-The APK produced by this workflow is a debug APK suitable for direct testing/installing after enabling “Install unknown apps”. For Play Store release, create a separately signed release build.
+Or push this folder to GitHub manually and download the `QUIZINOX-APK` artifact from Actions.
+
+## App icon
+`assets/quizinox-icon.png` is the source. During the build, `scripts/generate_android_icons.py`
+removes Capacitor's default launcher icon (the vector in `drawable-v24` that previously hid the
+custom icon) and writes QUIZINOX icons for every density, the adaptive icon and the splash screen.
+To change the icon, replace `assets/quizinox-icon.png` (square PNG, 1024x1024) and rebuild.
 
 ## Local development
 ```bash
@@ -25,25 +39,7 @@ npm install
 npm run dev
 ```
 
-
-## GitHub Actions dependency installation
-The workflow deliberately runs `npm install` without npm caching. A committed
-`package-lock.json` is not required for this workflow, and setup-node's npm
-cache is not enabled (it requires a lockfile). The workflow installs packages
-from `package.json` on each build.
-
-
-## Updated quiz experience
-- Exam mode: answer one question at a time; score and full answer review are shown after the final question.
-- Practice mode: selecting an answer immediately reveals correctness, the correct option and explanation.
-- TXT importer recognizes the supplied QUIZINOX sample layouts:
-  - `Q.1)` numbered questions with plain options and `Ex:` explanations
-  - `Q1.` questions separated from options by a standalone 😂 separator
-  - Lettered options such as `a)`, `b)`, `c)`, `d)`
-  - Correct-answer markers such as `✅`, `✔`, or `✓`
-- PDF import uses text positioning to preserve line breaks before question parsing.
-- PDF → TXT converter extracts selectable text locally. Scanned/image-only PDFs require OCR and are not auto-converted.
-- The uploaded QUIZINOX emblem is used for web favicon and Android launcher icons.
-
-
-Import regression check: the TXT parser was run against all 10 files in the supplied sample ZIP and extracted 50/50 questions from each file (500 questions total), including the two OCR-style answer labels found in the formatted solution sample.
+## Notes
+- Scanned (image-only) PDFs have no text layer and cannot be converted offline.
+- Exported files open the Android share sheet — choose Files / Drive / WhatsApp / Telegram to save.
+- The workflow builds a debug APK for direct install. For Play Store, create a signed release build.

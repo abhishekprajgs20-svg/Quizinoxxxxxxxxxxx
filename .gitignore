@@ -1,5 +1,7 @@
 node_modules/
 dist/
 android/
-.DS_Store
+.vite/
 *.apk
+.DS_Store
+package-lock.json
