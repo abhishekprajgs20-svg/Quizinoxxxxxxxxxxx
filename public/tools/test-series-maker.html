@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNIGRAM Test Paper to PDF Generator (Single Offline Tool)</title>
+    
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+
+    <!-- ALL IN ONE EMBEDDED STYLES -->
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --success-hover: #059669;
+            --warning: #f59e0b;
+            --radius: 12px;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+        }
+
+        .container-main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .header-banner {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+        }
+
+        .header-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .badge-offline {
+            display: inline-block;
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 4px 14px;
+            border-radius: 20px;
+            margin-top: 5px;
+        }
+
+        .card-glass {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #e2e8f0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .dropzone {
+            border: 2px dashed #475569;
+            border-radius: 10px;
+            padding: 35px 20px;
+            text-align: center;
+            background-color: rgba(15, 23, 42, 0.6);
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .dropzone:hover, .dropzone.dragover {
+            border-color: var(--primary);
+            background-color: rgba(59, 130, 246, 0.12);
+        }
+
+        .dropzone-icon {
+            font-size: 2.8rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .form-control, .form-select {
+            background-color: rgba(15, 23, 42, 0.8) !important;
+            border: 1px solid var(--border-color) !important;
+            color: var(--text-main) !important;
+            border-radius: 8px !important;
+            padding: 10px 14px !important;
+            font-size: 0.92rem !important;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background-color: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table-custom {
+            color: var(--text-main);
+            border-color: var(--border-color);
+        }
+
+        .table-custom th {
+            background-color: rgba(15, 23, 42, 0.95) !important;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .table-custom td {
+            background-color: rgba(30, 41, 59, 0.5) !important;
+            vertical-align: middle;
+            font-size: 0.9rem;
+            border-color: var(--border-color);
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: white;
+            font-weight: 700;
+            padding: 14px 28px;
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+        }
+
+        .btn-success-custom {
+            background: linear-gradient(135deg, var(--success), var(--success-hover));
+            color: white;
+            font-weight: 700;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-outline-custom {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+
+        .btn-outline-custom:hover {
+            background-color: var(--bg-card-hover);
+            color: white;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-container {
+            background-color: var(--bg-card);
+            width: 90%;
+            max-width: 1000px;
+            height: 90vh;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            flex: 1;
+            background-color: #000;
+        }
+
+        .modal-body iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-main">
+        
+        <!-- Header Banner -->
+        <div class="header-banner">
+            <h1 class="header-title"><i class="fa-solid fa-file-pdf me-2"></i>UNIGRAM TEST PAPER TO PDF TOOL</h1>
+            <p class="text-muted mb-2">Single Complete Offline Tool • Convert Any Test File (1 to 20,000+ Questions) into 3 Professional PDFs</p>
+            <span class="badge-offline"><i class="fa-solid fa-shield-halved me-1"></i> 100% Single File Standalone & Portable</span>
+        </div>
+
+        <!-- STEP 1: Upload & Configuration -->
+        <div class="card-glass">
+            <div class="card-title">
+                <i class="fa-solid fa-cloud-arrow-up text-primary"></i> 1. Upload Test Text File & Test Configuration
+            </div>
+
+            <!-- Dropzone -->
+            <div class="dropzone mb-4" id="dropzone">
+                <i class="fa-solid fa-file-lines dropzone-icon"></i>
+                <h5 class="fw-bold mb-1">Drag & Drop your Test Text File Here</h5>
+                <p class="text-muted small mb-3">Supports any test file (e.g. <code>input 1.txt</code>, <code>input 2.txt</code> from <code>D:\UNIGRAM\</code> or any custom file)</p>
+                <button class="btn btn-outline-custom btn-sm"><i class="fa-solid fa-folder-open me-2"></i>Browse Text File</button>
+                <input type="file" id="fileInput" accept=".txt" class="d-none">
+            </div>
+
+            <!-- Pre-loaded Sample Buttons -->
+            <div class="d-flex flex-wrap gap-2 mb-4 justify-content-center">
+                <span class="text-muted small align-self-center me-2"><i class="fa-solid fa-bolt text-warning me-1"></i>Quick Actions:</span>
+                <button id="btnLoadInput1" class="btn btn-outline-custom btn-sm"><i class="fa-solid fa-file-code me-1 text-info"></i>Load Built-in Sample Test</button>
+                <button id="btnBrowseDirect" class="btn btn-outline-custom btn-sm"><i class="fa-solid fa-folder-open me-1 text-success"></i>Browse File from Disk</button>
+            </div>
+
+            <!-- Test Form Inputs -->
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Test Name (Shown on Top Header & Page 1 Answer Grid)</label>
+                    <input type="text" id="testName" class="form-control" value="PowerUp Current Affairs Test – 01 (CA5001)">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Positive Marks (+)</label>
+                    <input type="number" step="0.5" id="positiveMarks" class="form-control" value="2.0">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Negative Marks (-)</label>
+                    <input type="number" step="0.01" id="negativeMarks" class="form-control" value="0.66">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">Time Allowed</label>
+                    <input type="text" id="timeAllowed" class="form-control" value="2 Hours">
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2: Parser Inspection & Verification Dashboard -->
+        <div id="parseStatusCard" class="card-glass d-none">
+            <div class="card-title">
+                <i class="fa-solid fa-square-check text-success"></i> 2. Parsed Test Summary & Answer Key Verification
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div id="statTotalQ" class="stat-value">0</div>
+                    <div class="stat-label">Total Questions</div>
+                </div>
+                <div class="stat-box">
+                    <div id="statAnswersFound" class="stat-value">0</div>
+                    <div class="stat-label">Answer Keys Detected</div>
+                </div>
+                <div class="stat-box">
+                    <div id="statExplanationsFound" class="stat-value">0</div>
+                    <div class="stat-label">Solutions Parsed</div>
+                </div>
+            </div>
+
+            <!-- Table Preview -->
+            <div class="table-responsive style-scroll mb-3" style="max-height: 320px; overflow-y: auto;">
+                <table class="table table-custom table-hover">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;" class="text-center">Q#</th>
+                            <th>Question Preview</th>
+                            <th style="width: 120px;" class="text-center">Answer Key</th>
+                        </tr>
+                    </thead>
+                    <tbody id="questionsTableBody">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Action Button -->
+            <div class="text-center pt-2">
+                <button id="btnGeneratePDFs" class="btn btn-primary-custom btn-lg w-100">
+                    <i class="fa-solid fa-wand-magic-sparkles me-2"></i>GENERATE ALL 3 PDFs NOW
+                </button>
+            </div>
+
+            <!-- Progress Bar -->
+            <div id="pdfProgressContainer" class="mt-3 d-none">
+                <div class="progress" style="height: 10px; background-color: rgba(15,23,42,0.8);">
+                    <div id="pdfProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width: 0%;"></div>
+                </div>
+                <small id="pdfProgressText" class="text-muted d-block text-center mt-2">Preparing PDF generation...</small>
+            </div>
+        </div>
+
+        <!-- STEP 3: Downloads & Previews -->
+        <div id="downloadsCard" class="card-glass d-none">
+            <div class="card-title text-success">
+                <i class="fa-solid fa-circle-check"></i> 3. Download & Preview Generated PDFs
+            </div>
+
+            <div class="row g-3">
+                <!-- PDF 1: Question Paper -->
+                <div class="col-md-4">
+                    <div class="card h-100 bg-dark text-white border-secondary p-3 text-center">
+                        <i class="fa-solid fa-file-circle-question fs-1 text-info mb-2"></i>
+                        <h6 class="fw-bold">1. Question Paper PDF</h6>
+                        <p class="text-muted small">Only questions & options with headers & 5mm ultra-compact margins.</p>
+                        <div class="mt-auto d-flex gap-2 justify-content-center">
+                            <button id="btnDownloadQ" class="btn btn-success-custom btn-sm flex-fill"><i class="fa-solid fa-download me-1"></i>Download</button>
+                            <button id="btnPreviewQ" class="btn btn-outline-custom btn-sm"><i class="fa-solid fa-eye"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PDF 2: Solution Paper -->
+                <div class="col-md-4">
+                    <div class="card h-100 bg-dark text-white border-secondary p-3 text-center">
+                        <i class="fa-solid fa-table-cells fs-1 text-warning mb-2"></i>
+                        <h6 class="fw-bold">2. Solution PDF</h6>
+                        <p class="text-muted small"><strong>Page 1 Answer Key Grid</strong> + detailed explanations.</p>
+                        <div class="mt-auto d-flex gap-2 justify-content-center">
+                            <button id="btnDownloadS" class="btn btn-success-custom btn-sm flex-fill"><i class="fa-solid fa-download me-1"></i>Download</button>
+                            <button id="btnPreviewS" class="btn btn-outline-custom btn-sm"><i class="fa-solid fa-eye"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PDF 3: Merged Paper -->
+                <div class="col-md-4">
+                    <div class="card h-100 bg-dark text-white border-secondary p-3 text-center">
+                        <i class="fa-solid fa-layer-group fs-1 text-primary mb-2"></i>
+                        <h6 class="fw-bold">3. Merged Complete PDF</h6>
+                        <p class="text-muted small">Question Paper + Solution Paper combined seamlessly.</p>
+                        <div class="mt-auto d-flex gap-2 justify-content-center">
+                            <button id="btnDownloadM" class="btn btn-primary-custom btn-sm flex-fill"><i class="fa-solid fa-download me-1"></i>Download Merged</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- PDF Preview Modal -->
+    <div id="previewModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h5 id="modalTitle" class="modal-title fw-bold text-white mb-0">PDF Preview</h5>
+                <button id="btnCloseModal" class="btn btn-sm btn-outline-light"><i class="fa-solid fa-xmark"></i> Close</button>
+            </div>
+            <div class="modal-body">
+                <iframe id="modalIframe" src=""></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Dependencies loaded via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
+    <!-- ALL IN ONE EMBEDDED JAVASCRIPT LOGIC -->
+    <script>
+    (function () {
+        'use strict';
+
+        // ==========================================
+        // 1. UNIGRAM PARSER ENGINE v3.5 (Dynamic N Qs)
+        // ==========================================
+        const UnigramParser = {
+            cleanText: function (text) {
+                if (!text) return '';
+                return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+            },
+            normalizeBodyText: function (text) {
+                const emojiNumbers = {
+                    '1️⃣': '\n1. ', '2️⃣': '\n2. ', '3️⃣': '\n3. ', '4️⃣': '\n4. ', '5️⃣': '\n5. ',
+                    '6️⃣': '\n6. ', '7️⃣': '\n7. ', '8️⃣': '\n8. ', '9️⃣': '\n9. ', '🔟': '\n10. '
+                };
+                let result = text;
+                for (const [emoji, num] of Object.entries(emojiNumbers)) {
+                    result = result.replace(new RegExp(emoji, 'g'), num);
+                }
+                result = result.replace(/(\s*)(Statement\s*-\s*[I|V|X\d]+:?)/gi, '\n$2');
+                return result;
+            },
+            parse: function (rawContent) {
+                const text = this.cleanText(rawContent);
+                if (!text) throw new Error("File is empty or contains no readable text.");
+
+                const qHeaderRegex = /^\s*(?:Q|Q\.|Question)\s*(\d+)[\.\)\:\s]\s*(.*)/i;
+                const lines = text.split('\n');
+                const rawBlocks = [];
+                let currentBlock = null;
+
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i];
+                    const match = line.match(qHeaderRegex);
+
+                    if (match) {
+                        if (currentBlock) rawBlocks.push(currentBlock);
+                        currentBlock = {
+                            num: parseInt(match[1], 10),
+                            firstLine: match[2] || '',
+                            lines: []
+                        };
+                    } else if (currentBlock) {
+                        currentBlock.lines.push(line);
+                    }
+                }
+                if (currentBlock) rawBlocks.push(currentBlock);
+
+                if (rawBlocks.length === 0) {
+                    throw new Error("Could not find any question patterns (e.g. Q.1) or Q1.) in the file.");
+                }
+
+                return rawBlocks.map((block, index) => this.parseQuestionBlock(block, index + 1));
+            },
+            parseQuestionBlock: function (block, expectedNum) {
+                const qNum = block.num || expectedNum;
+                const allLines = [block.firstLine, ...block.lines];
+
+                let exIndex = -1;
+                for (let i = 0; i < allLines.length; i++) {
+                    if (/^(?:Ex|Explanation|Sol|Solution)\s*:/i.test(allLines[i].trim())) {
+                        exIndex = i;
+                        break;
+                    }
+                }
+
+                let explanationText = "";
+                let contentLines = [];
+
+                if (exIndex !== -1) {
+                    const exHeader = allLines[exIndex].trim();
+                    const exBody = allLines.slice(exIndex + 1).map(l => l.trim()).filter(l => l.length > 0).join('\n');
+                    const exStartText = exHeader.replace(/^(?:Ex|Explanation|Sol|Solution)\s*:\s*/i, '');
+                    explanationText = (exStartText ? exStartText + '\n' : '') + exBody;
+                    contentLines = allLines.slice(0, exIndex);
+                } else {
+                    contentLines = allLines;
+                }
+
+                const cleanedContent = contentLines.map(l => l.trim()).filter(l => l.length > 0 && l !== '😂' && l !== '😊' && l !== '👍');
+
+                let options = [];
+                let correctIndex = -1;
+                let qBodyLines = [];
+
+                if (cleanedContent.length >= 4) {
+                    const potentialOptions = cleanedContent.slice(-4);
+                    qBodyLines = cleanedContent.slice(0, -4);
+
+                    options = potentialOptions.map((optLine, idx) => {
+                        let text = optLine;
+                        let isCorrect = false;
+
+                        if (text.includes('✅') || /[\(\[\{]correct[\)\]\}]/i.test(text)) {
+                            isCorrect = true;
+                            correctIndex = idx;
+                            text = text.replace(/✅/g, '').replace(/[\(\[\{]correct[\)\]\}]/gi, '').trim();
+                        }
+                        return {
+                            label: `(${String.fromCharCode(97 + idx)})`,
+                            text: text,
+                            isCorrect: isCorrect
+                        };
+                    });
+                } else {
+                    qBodyLines = cleanedContent;
+                    options = [
+                        { label: '(a)', text: 'Option A', isCorrect: false },
+                        { label: '(b)', text: 'Option B', isCorrect: false },
+                        { label: '(c)', text: 'Option C', isCorrect: false },
+                        { label: '(d)', text: 'Option D', isCorrect: false }
+                    ];
+                }
+
+                if (correctIndex === -1 && explanationText) {
+                    const exLower = explanationText.toLowerCase();
+                    if (exLower.includes('hence, option (a)') || exLower.includes('option (a) is correct') || exLower.includes('hence, (a)') || exLower.includes('statement 1 is correct')) {
+                        correctIndex = 0;
+                    } else if (exLower.includes('hence, option (b)') || exLower.includes('option (b) is correct') || exLower.includes('hence, (b)')) {
+                        correctIndex = 1;
+                    } else if (exLower.includes('hence, option (c)') || exLower.includes('option (c) is correct') || exLower.includes('hence, (c)')) {
+                        correctIndex = 2;
+                    } else if (exLower.includes('hence, option (d)') || exLower.includes('option (d) is correct') || exLower.includes('hence, (d)')) {
+                        correctIndex = 3;
+                    } else {
+                        correctIndex = 0;
+                    }
+                }
+
+                if (correctIndex !== -1 && options[correctIndex]) {
+                    options[correctIndex].isCorrect = true;
+                }
+
+                const fullRawBody = qBodyLines.join('\n');
+                const normalizedBody = this.normalizeBodyText(fullRawBody);
+                const bodyLinesSplit = normalizedBody.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+                let stem = "";
+                let statements = [];
+                let prompt = "";
+
+                const statementRegex = /^(?:(\d+[\.\)]|Statement\s*-\s*[I|V|X\d]+:?)\s*)(.*)/i;
+                const promptRegex = /^(?:Which of the|Select the|How many of|In the context|The above passage|Which one of)/i;
+
+                bodyLinesSplit.forEach(line => {
+                    if (statementRegex.test(line)) {
+                        statements.push(line);
+                    } else if (promptRegex.test(line) && statements.length > 0) {
+                        prompt = line;
+                    } else {
+                        if (statements.length === 0) {
+                            stem += (stem ? "\n" : "") + line;
+                        } else if (!prompt) {
+                            prompt = line;
+                        }
+                    }
+                });
+
+                if (!stem && bodyLinesSplit.length > 0) {
+                    stem = bodyLinesSplit[0];
+                }
+
+                return {
+                    id: qNum,
+                    num: qNum,
+                    stem: stem,
+                    statements: statements,
+                    prompt: prompt,
+                    fullQuestionText: normalizedBody,
+                    options: options,
+                    correctIndex: correctIndex >= 0 ? correctIndex : 0,
+                    correctLetter: `(${String.fromCharCode(97 + (correctIndex >= 0 ? correctIndex : 0))})`,
+                    explanation: explanationText || "No detailed explanation provided."
+                };
+            }
+        };
+
+        // ==========================================
+        // 2. UNIGRAM PDF GENERATOR ENGINE v3.5 (PERFECT SPACING & ZERO OVERLAP)
+        // ==========================================
+        const UnigramPDFGenerator = {
+            getTextDimensions: function (doc, text, maxWidth, fontSize = 8.5, fontStyle = 'normal') {
+                doc.setFontSize(fontSize);
+                doc.setFont('helvetica', fontStyle);
+                const lines = doc.splitTextToSize(text, maxWidth);
+                const lineHeight = fontSize * 1.15 * 0.352778; // ~3.45mm line height for 8.5pt
+                return { lines: lines, height: lines.length * lineHeight, lineHeight: lineHeight };
+            },
+            applyHeaders: function (doc, config, startPage = 1) {
+                const totalPages = doc.internal.getNumberOfPages();
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const margin = 5;
+
+                for (let i = startPage; i <= totalPages; i++) {
+                    doc.setPage(i);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(7.5);
+                    doc.setTextColor(60, 60, 60);
+                    doc.text(config.testName.toUpperCase(), margin, 4.5);
+
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, 4.5, { align: 'right' });
+
+                    // Top Header Divider Line at y=6mm (Content starts at y=10mm giving 4mm clean padding)
+                    doc.setDrawColor(180, 185, 190);
+                    doc.setLineWidth(0.25);
+                    doc.line(margin, 6.0, pageWidth - margin, 6.0);
+                }
+            },
+            generateQuestionPDF: function (questions, config) {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const margin = 5;
+                const contentWidth = pageWidth - (margin * 2); // 200mm usable width
+                let y = 10; // Clean start Y (4mm below header line)
+
+                // Cover Box on Page 1
+                doc.setFillColor(245, 247, 250);
+                doc.rect(margin, y, contentWidth, 20, 'F');
+                doc.setDrawColor(200, 205, 215);
+                doc.rect(margin, y, contentWidth, 20, 'S');
+
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(10.5);
+                doc.setTextColor(15, 23, 42);
+                doc.text(config.testName, margin + 3, y + 5);
+
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8);
+                doc.setTextColor(70, 75, 85);
+                doc.text("GENERAL STUDIES / CURRENT AFFAIRS - QUESTION BOOKLET", margin + 3, y + 10);
+
+                const metaLine1 = `Total Questions: ${questions.length}    |    Maximum Marks: ${(questions.length * parseFloat(config.positiveMarks)).toFixed(1)}    |    Time Allowed: ${config.timeAllowed}`;
+                const metaLine2 = `Correct Answer: +${config.positiveMarks} Marks    |    Incorrect Answer: -${config.negativeMarks} Marks`;
+                doc.text(metaLine1, margin + 3, y + 14.5);
+                doc.text(metaLine2, margin + 3, y + 18.5);
+
+                y += 24; // Position after Cover Box (y=34mm)
+
+                questions.forEach((q) => {
+                    const qHeader = `Q${q.num}. `;
+                    const stemText = qHeader + (q.stem || q.fullQuestionText);
+                    const stemDim = this.getTextDimensions(doc, stemText, contentWidth, 8.5, 'bold');
+                    
+                    let stmtHeight = 0;
+                    const statementLinesList = [];
+                    q.statements.forEach(stmt => {
+                        const sDim = this.getTextDimensions(doc, stmt, contentWidth - 4, 8.5, 'normal');
+                        statementLinesList.push(sDim);
+                        stmtHeight += sDim.height + 1.0;
+                    });
+
+                    let promptDim = null;
+                    if (q.prompt) promptDim = this.getTextDimensions(doc, q.prompt, contentWidth, 8.5, 'italic');
+
+                    let optHeight = 0;
+                    const optionDims = q.options.map(opt => {
+                        const optText = `${opt.label} ${opt.text}`;
+                        const optDim = this.getTextDimensions(doc, optText, contentWidth - 3, 8.5, 'normal');
+                        optHeight += optDim.height + 1.0;
+                        return optDim;
+                    });
+
+                    const totalBlockHeight = stemDim.height + stmtHeight + (promptDim ? promptDim.height + 1.2 : 0) + optHeight + 3.0;
+
+                    // SMART PAGE BREAK LOGIC: Fill page down to 292mm without wasting bottom space
+                    if (y + totalBlockHeight > 292) {
+                        doc.addPage();
+                        y = 10; // Resets Y comfortably below top header line on new page
+                    }
+
+                    // 1. Stem
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(8.5);
+                    doc.setTextColor(15, 23, 42);
+                    doc.text(stemDim.lines, margin, y);
+                    y += stemDim.height + 1.2;
+
+                    // 2. Statements (Indented)
+                    if (statementLinesList.length > 0) {
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(8.5);
+                        doc.setTextColor(30, 40, 55);
+                        statementLinesList.forEach(sDim => {
+                            doc.text(sDim.lines, margin + 4, y);
+                            y += sDim.height + 1.0;
+                        });
+                        y += 0.5;
+                    }
+
+                    // 3. Prompt
+                    if (promptDim) {
+                        doc.setFont('helvetica', 'italic');
+                        doc.setFontSize(8.5);
+                        doc.setTextColor(70, 75, 85);
+                        doc.text(promptDim.lines, margin, y);
+                        y += promptDim.height + 1.2;
+                    }
+
+                    // 4. Options
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(8.5);
+                    doc.setTextColor(30, 35, 45);
+                    optionDims.forEach(optDim => {
+                        doc.text(optDim.lines, margin + 2, y);
+                        y += optDim.height + 1.0;
+                    });
+                    y += 1.5;
+
+                    // Thin Divider Line
+                    doc.setDrawColor(230, 235, 240);
+                    doc.setLineWidth(0.2);
+                    doc.line(margin, y - 0.8, pageWidth - margin, y - 0.8);
+                });
+
+                this.applyHeaders(doc, config);
+                return doc;
+            },
+
+            generateSolutionPDF: function (questions, config) {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const margin = 5;
+                const contentWidth = pageWidth - (margin * 2);
+
+                const totalQ = questions.length;
+                const CHUNK_SIZE = 100;
+                const totalTablePages = Math.ceil(totalQ / CHUNK_SIZE);
+
+                for (let pageIdx = 0; pageIdx < totalTablePages; pageIdx++) {
+                    if (pageIdx > 0) doc.addPage();
+
+                    const qStart = (pageIdx * CHUNK_SIZE) + 1;
+                    const qEnd = Math.min(totalQ, (pageIdx + 1) * CHUNK_SIZE);
+                    const chunkQuestions = questions.slice(qStart - 1, qEnd);
+                    const totalInChunk = chunkQuestions.length;
+
+                    const numCols = Math.min(10, Math.ceil(totalInChunk / 10));
+                    const numRows = Math.min(10, Math.ceil(totalInChunk / numCols));
+
+                    const tableBody = [];
+                    for (let r = 0; r < numRows; r++) {
+                        const rowData = [];
+                        for (let c = 0; c < numCols; c++) {
+                            const qIndexInChunk = r + (c * 10);
+                            if (qIndexInChunk < totalInChunk) {
+                                const q = chunkQuestions[qIndexInChunk];
+                                const letter = q.correctLetter.replace(/[\(\)]/g, '').toLowerCase();
+                                rowData.push(`${q.num}. (${letter})`);
+                            } else {
+                                rowData.push('');
+                            }
+                        }
+                        tableBody.push(rowData);
+                    }
+
+                    const head = [
+                        [
+                            {
+                                content: `${config.testName}- Answer Key` + (totalTablePages > 1 ? ` (Page ${pageIdx+1})` : ''),
+                                colSpan: numCols,
+                                styles: {
+                                    halign: 'center',
+                                    fillColor: [255, 255, 255],
+                                    textColor: [0, 0, 0],
+                                    fontStyle: 'bold',
+                                    fontSize: 9.5,
+                                    lineWidth: 0.35,
+                                    lineColor: [40, 40, 40]
+                                }
+                            }
+                        ]
+                    ];
+
+                    doc.autoTable({
+                        startY: 8,
+                        head: head,
+                        body: tableBody,
+                        margin: { left: 5, right: 5, top: 8, bottom: 5 },
+                        styles: {
+                            font: 'helvetica',
+                            fontSize: 8.5,
+                            cellPadding: 2,
+                            alignment: 'center',
+                            valign: 'middle',
+                            lineColor: [40, 40, 40],
+                            lineWidth: 0.25,
+                            textColor: [20, 20, 20]
+                        },
+                        alternateRowStyles: {
+                            fillColor: [255, 255, 255]
+                        }
+                    });
+                }
+
+                // PAGES ONWARDS: DETAILED SOLUTIONS
+                doc.addPage();
+                let y = 10; // Clean Y start (4mm below header line)
+
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(10.5);
+                doc.setTextColor(15, 23, 42);
+                doc.text("ANSWERS & DETAILED EXPLANATIONS", margin, y);
+                y += 5;
+
+                doc.setDrawColor(30, 41, 59);
+                doc.setLineWidth(0.35);
+                doc.line(margin, y, pageWidth - margin, y);
+                y += 5;
+
+                questions.forEach((q) => {
+                    const letterOnly = q.correctLetter.replace(/[\(\)]/g, '').toUpperCase();
+                    const solHeader = `Q ${q.num}. ${letterOnly}`;
+
+                    const qDim = this.getTextDimensions(doc, solHeader, contentWidth, 9.5, 'bold');
+                    const expDim = this.getTextDimensions(doc, q.explanation, contentWidth - 3, 8.5, 'normal');
+                    
+                    const totalSolHeight = qDim.height + expDim.height + 6;
+
+                    if (y + totalSolHeight > 292) {
+                        doc.addPage();
+                        y = 10; // Clean Y start on new page
+                    }
+
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(9.5);
+                    doc.setTextColor(15, 23, 42);
+                    doc.text(solHeader, margin, y);
+                    y += qDim.height + 1.2;
+
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(8.5);
+                    doc.setTextColor(51, 65, 85);
+                    doc.text(expDim.lines, margin + 2, y);
+                    y += expDim.height + 3.5;
+
+                    doc.setDrawColor(226, 232, 240);
+                    doc.setLineWidth(0.2);
+                    doc.line(margin, y - 1.2, pageWidth - margin, y - 1.2);
+                });
+
+                this.applyHeaders(doc, config);
+                return doc;
+            },
+
+            mergePDFs: async function (qDoc, sDoc) {
+                if (!window.PDFLib) throw new Error("pdf-lib library not loaded.");
+                const { PDFDocument } = window.PDFLib;
+                const qArrayBuffer = qDoc.output('arraybuffer');
+                const sArrayBuffer = sDoc.output('arraybuffer');
+
+                const mergedPdf = await PDFDocument.create();
+                const pdf1 = await PDFDocument.load(qArrayBuffer);
+                const pdf2 = await PDFDocument.load(sArrayBuffer);
+
+                const copiedPages1 = await mergedPdf.copyPages(pdf1, pdf1.getPageIndices());
+                copiedPages1.forEach(page => mergedPdf.addPage(page));
+
+                const copiedPages2 = await mergedPdf.copyPages(pdf2, pdf2.getPageIndices());
+                copiedPages2.forEach(page => mergedPdf.addPage(page));
+
+                return await mergedPdf.save();
+            }
+        };
+
+        // ==========================================
+        // 3. APPLICATION CONTROLLER
+        // ==========================================
+        let parsedQuestions = [];
+        let generatedPDFs = { questionDoc: null, solutionDoc: null, mergedBytes: null };
+
+        const SAMPLE_INPUT_1 = `Q.1) A citizen may lose his/her citizenship when: 1️⃣ the citizen has been ordinarily resident out of India for five years continuously. 2️⃣ she/he has shown disloyalty to the Constitution of India. 3️⃣ the citizen has within five years after registration or naturalization, been imprisoned in any country for two years.
+2 only
+1 and 2 only
+2 and 3 only ✅
+1, 2 and 3
+Ex: The Citizenship Act, 1955, prescribes three ways of losing citizenship: renunciation, termination, and deprivation. Under deprivation, the Central government can compulsorily terminate citizenship if the citizen has shown disloyalty to the Constitution of India. Additionally, citizenship can be terminated if a citizen has, within five years after registration or naturalization, been imprisoned in any country for two years. However, loss of citizenship due to residence outside India requires being an ordinary resident out of India for seven years continuously, not five years.
+
+Q.2) With reference to the theory of 'basic structure', consider the following statements: 1️⃣ It first emerged in the Minerva Mills case. 2️⃣ It upholds the absolute power of parliament to amend constitution.
+1 only
+2 only
+Both 1 and 2
+Neither 1 nor 2 ✅
+Ex: The Basic Structure Doctrine was first introduced by the Supreme Court in the Kesavananda Bharati case (1973), not the Minerva Mills case. The Minerva Mills case (1980) reaffirmed the doctrine but did not introduce it. The doctrine ensures that Parliament's power to amend the Constitution is not absolute, protecting core principles like secularism, federalism, and judicial review. This maintains a balance between the rigidity of fundamental principles and the flexibility required for constitutional evolution.`;
+
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const btnLoadInput1 = document.getElementById('btnLoadInput1');
+        const btnBrowseDirect = document.getElementById('btnBrowseDirect');
+
+        const testNameInput = document.getElementById('testName');
+        const positiveMarksInput = document.getElementById('positiveMarks');
+        const negativeMarksInput = document.getElementById('negativeMarks');
+        const timeAllowedInput = document.getElementById('timeAllowed');
+
+        const parseStatusCard = document.getElementById('parseStatusCard');
+        const statTotalQ = document.getElementById('statTotalQ');
+        const statAnswersFound = document.getElementById('statAnswersFound');
+        const statExplanationsFound = document.getElementById('statExplanationsFound');
+
+        const questionsTableBody = document.getElementById('questionsTableBody');
+        const btnGeneratePDFs = document.getElementById('btnGeneratePDFs');
+        const pdfProgressContainer = document.getElementById('pdfProgressContainer');
+        const pdfProgressBar = document.getElementById('pdfProgressBar');
+        const pdfProgressText = document.getElementById('pdfProgressText');
+
+        const downloadsCard = document.getElementById('downloadsCard');
+        const btnDownloadQ = document.getElementById('btnDownloadQ');
+        const btnDownloadS = document.getElementById('btnDownloadS');
+        const btnDownloadM = document.getElementById('btnDownloadM');
+        const btnPreviewQ = document.getElementById('btnPreviewQ');
+        const btnPreviewS = document.getElementById('btnPreviewS');
+
+        const previewModal = document.getElementById('previewModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalIframe = document.getElementById('modalIframe');
+        const btnCloseModal = document.getElementById('btnCloseModal');
+
+        dropzone.addEventListener('click', () => fileInput.click());
+        dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) handleFileUpload(e.dataTransfer.files[0]);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleFileUpload(e.target.files[0]);
+        });
+
+        btnLoadInput1.addEventListener('click', () => processFileContent(SAMPLE_INPUT_1, "input 1.txt"));
+        btnBrowseDirect.addEventListener('click', () => fileInput.click());
+
+        function handleFileUpload(file) {
+            const reader = new FileReader();
+            reader.onload = function (e) { processFileContent(e.target.result, file.name); };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        function processFileContent(text, fileName) {
+            try {
+                parsedQuestions = UnigramParser.parse(text);
+                
+                if (fileName) {
+                    const cleanName = fileName.replace(/\.txt$/i, '');
+                    if (cleanName.toLowerCase().includes('input 1') || cleanName.toLowerCase().includes('1')) {
+                        testNameInput.value = "PowerUp Current Affairs Test – 01 (CA5001)";
+                    } else if (cleanName.toLowerCase().includes('input 2') || cleanName.toLowerCase().includes('2')) {
+                        testNameInput.value = "PowerUp Current Affairs Test – 02 (CA5002)";
+                    }
+                }
+
+                renderParserStats();
+                renderQuestionsTable();
+                parseStatusCard.classList.remove('d-none');
+                btnGeneratePDFs.disabled = false;
+                parseStatusCard.scrollIntoView({ behavior: 'smooth' });
+            } catch (err) {
+                alert("Error parsing file: " + err.message);
+                console.error(err);
+            }
+        }
+
+        function renderParserStats() {
+            statTotalQ.textContent = parsedQuestions.length;
+            const answersCount = parsedQuestions.filter(q => q.correctIndex !== -1).length;
+            statAnswersFound.textContent = `${answersCount} / ${parsedQuestions.length}`;
+            const exCount = parsedQuestions.filter(q => q.explanation && q.explanation.length > 10).length;
+            statExplanationsFound.textContent = `${exCount} / ${parsedQuestions.length}`;
+        }
+
+        function renderQuestionsTable() {
+            questionsTableBody.innerHTML = '';
+            parsedQuestions.forEach((q, idx) => {
+                const tr = document.createElement('tr');
+                const stemExcerpt = q.stem.substring(0, 60) + (q.stem.length > 60 ? '...' : '');
+                const stmtInfo = q.statements.length > 0 ? ` [${q.statements.length} Statements]` : '';
+
+                tr.innerHTML = `
+                    <td class="fw-bold text-center">${q.num}</td>
+                    <td>
+                        <div class="fw-medium text-light">${escapeHtml(stemExcerpt)} <span class="badge bg-primary ms-1">${stmtInfo}</span></div>
+                        <small class="text-muted">Options: ${q.options.length} | Expl: ${escapeHtml(q.explanation.substring(0, 40))}...</small>
+                    </td>
+                    <td class="text-center">
+                        <select class="form-select form-select-sm ans-select" data-index="${idx}" style="width:75px; margin:0 auto;">
+                            <option value="0" ${q.correctIndex === 0 ? 'selected' : ''}>(a)</option>
+                            <option value="1" ${q.correctIndex === 1 ? 'selected' : ''}>(b)</option>
+                            <option value="2" ${q.correctIndex === 2 ? 'selected' : ''}>(c)</option>
+                            <option value="3" ${q.correctIndex === 3 ? 'selected' : ''}>(d)</option>
+                        </select>
+                    </td>
+                `;
+                questionsTableBody.appendChild(tr);
+            });
+
+            document.querySelectorAll('.ans-select').forEach(select => {
+                select.addEventListener('change', function () {
+                    const index = parseInt(this.getAttribute('data-index'), 10);
+                    const newCorrectIdx = parseInt(this.value, 10);
+                    parsedQuestions[index].correctIndex = newCorrectIdx;
+                    parsedQuestions[index].correctLetter = `(${String.fromCharCode(97 + newCorrectIdx)})`;
+                    parsedQuestions[index].options.forEach((opt, i) => opt.isCorrect = (i === newCorrectIdx));
+                });
+            });
+        }
+
+        btnGeneratePDFs.addEventListener('click', async function () {
+            if (parsedQuestions.length === 0) {
+                alert("Please upload a text file first.");
+                return;
+            }
+
+            const config = {
+                testName: testNameInput.value.trim() || "PowerUp Current Affairs Test – 01",
+                positiveMarks: positiveMarksInput.value.trim() || "2.0",
+                negativeMarks: negativeMarksInput.value.trim() || "0.66",
+                timeAllowed: timeAllowedInput.value.trim() || "2 Hours"
+            };
+
+            pdfProgressContainer.classList.remove('d-none');
+            btnGeneratePDFs.disabled = true;
+
+            try {
+                updateProgress(25, "Generating Question Paper PDF...");
+                await sleep(100);
+
+                const qDoc = UnigramPDFGenerator.generateQuestionPDF(parsedQuestions, config);
+                generatedPDFs.questionDoc = qDoc;
+
+                updateProgress(60, "Generating Solution PDF with Page 1 Answer Key Grid...");
+                await sleep(100);
+
+                const sDoc = UnigramPDFGenerator.generateSolutionPDF(parsedQuestions, config);
+                generatedPDFs.solutionDoc = sDoc;
+
+                updateProgress(85, "Merging Question & Solution PDFs...");
+                await sleep(100);
+
+                const mergedBytes = await UnigramPDFGenerator.mergePDFs(qDoc, sDoc);
+                generatedPDFs.mergedBytes = mergedBytes;
+
+                updateProgress(100, "All 3 PDFs Generated Successfully!");
+                await sleep(200);
+
+                downloadsCard.classList.remove('d-none');
+                downloadsCard.scrollIntoView({ behavior: 'smooth' });
+            } catch (err) {
+                alert("Error generating PDFs: " + err.message);
+                console.error(err);
+            } finally {
+                btnGeneratePDFs.disabled = false;
+            }
+        });
+
+        btnDownloadQ.addEventListener('click', () => {
+            if (!generatedPDFs.questionDoc) return;
+            generatedPDFs.questionDoc.save(`${getSanitizedTestName()}_Question_Paper.pdf`);
+        });
+
+        btnDownloadS.addEventListener('click', () => {
+            if (!generatedPDFs.solutionDoc) return;
+            generatedPDFs.solutionDoc.save(`${getSanitizedTestName()}_Solution_Paper.pdf`);
+        });
+
+        btnDownloadM.addEventListener('click', () => {
+            if (!generatedPDFs.mergedBytes) return;
+            const blob = new Blob([generatedPDFs.mergedBytes], { type: 'application/pdf' });
+            downloadBlob(blob, `${getSanitizedTestName()}_Complete_Paper.pdf`);
+        });
+
+        btnPreviewQ.addEventListener('click', () => {
+            if (!generatedPDFs.questionDoc) return;
+            showModalPreview("Question Paper PDF Preview", generatedPDFs.questionDoc.output('blob'));
+        });
+
+        btnPreviewS.addEventListener('click', () => {
+            if (!generatedPDFs.solutionDoc) return;
+            showModalPreview("Solution PDF (Answer Key & Explanations) Preview", generatedPDFs.solutionDoc.output('blob'));
+        });
+
+        btnCloseModal.addEventListener('click', () => {
+            previewModal.style.display = 'none';
+            modalIframe.src = '';
+        });
+
+        function showModalPreview(title, blob) {
+            modalTitle.textContent = title;
+            modalIframe.src = URL.createObjectURL(blob);
+            previewModal.style.display = 'flex';
+        }
+
+        function getSanitizedTestName() {
+            return (testNameInput.value.trim() || "Unigram_Test").replace(/[^a-zA-Z0-9_\-]/g, '_');
+        }
+
+        function downloadBlob(blob, filename) {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+        }
+
+        function updateProgress(percent, text) {
+            pdfProgressBar.style.width = `${percent}%`;
+            pdfProgressText.textContent = text;
+        }
+
+        function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+        function escapeHtml(text) { return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    })();
+    </script>
+</body>
+</html>

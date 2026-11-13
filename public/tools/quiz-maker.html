@@ -1,0 +1,2020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Generator Tool</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #080b16;
+            --panel: rgba(17, 23, 43, .88);
+            --panel-2: rgba(24, 31, 56, .78);
+            --text: #f4f6ff;
+            --muted: #a2acc8;
+            --pink: #f472b6;
+            --violet: #9b8cff;
+            --cyan: #67e8f9;
+            --line: rgba(173, 190, 255, .16);
+            --glass-border: rgba(173, 190, 255, .18);
+            --telegram-blue: #a78bfa;
+            --card-bg: rgba(17, 23, 43, .92);
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+            margin: 0;
+            padding: 36px 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(ellipse at 12% 8%, rgba(124, 58, 237, .22), transparent 34%),
+                        radial-gradient(ellipse at 90% 86%, rgba(34, 211, 238, .12), transparent 32%),
+                        linear-gradient(145deg, #080b16 0%, #101329 52%, #090d19 100%);
+            background-attachment: fixed;
+        }
+        body::before, body::after {
+            content: ''; position: fixed; width: 250px; height: 250px; border-radius: 50%;
+            filter: blur(70px); opacity: .13; pointer-events: none; z-index: 0;
+        }
+        body::before { background: #a855f7; top: -100px; right: 8%; }
+        body::after { background: #22d3ee; bottom: -120px; left: 3%; }
+        .container {
+            position: relative; z-index: 1;
+            width: min(100%, 790px);
+            padding: clamp(24px, 5vw, 46px);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            background: linear-gradient(145deg, rgba(20, 27, 51, .96), rgba(12, 17, 34, .96));
+            box-shadow: 0 30px 90px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.04);
+            text-align: left;
+            overflow: hidden;
+        }
+        .container::before {
+            content: ''; position: absolute; top: 0; left: 8%; right: 8%; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--violet), var(--cyan), transparent); opacity: .8;
+        }
+        h1 {
+            font-family: 'Outfit', sans-serif; font-size: clamp(2rem, 5vw, 2.8rem);
+            letter-spacing: -.045em; line-height: 1.05; margin: 0 0 12px;
+            color: #fff; display: flex; align-items: center; gap: 14px;
+        }
+        h1 i {
+            display: inline-grid; place-items: center; flex: 0 0 56px; height: 56px;
+            border-radius: 18px; font-size: 25px; color: #fff;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            box-shadow: 0 10px 30px rgba(168, 85, 247, .25);
+        }
+        .container > p { color: var(--muted); font-size: .98rem; line-height: 1.7; margin: 0 0 28px; max-width: 600px; }
+        .file-upload {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 10px; margin: 0 0 14px; padding: 30px 20px; min-height: 170px;
+            border: 1.5px dashed rgba(167, 139, 250, .6); border-radius: 20px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, .09), rgba(34, 211, 238, .045));
+            cursor: pointer; text-align: center; transition: border-color .2s, background .2s, transform .2s;
+        }
+        .file-upload:hover { border-color: var(--cyan); background: rgba(139, 92, 246, .13); transform: translateY(-2px); }
+        .file-upload > i { color: var(--violet) !important; margin: 0 !important; font-size: 30px !important; }
+        #file-label { font-weight: 700; font-size: 1.03rem; color: #f4f3ff; }
+        .file-upload::after { content: 'Choose one or multiple files · Works locally in your browser'; color: #8995b5; font-size: .78rem; }
+        #file-input { display: none; }
+        #file-list {
+            display: grid; gap: 9px; margin: 12px 0 22px; color: #e7eaff;
+            font-size: .9rem; max-height: 250px; overflow-y: auto;
+        }
+        .file-row {
+            display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: center;
+            padding: 10px; border: 1px solid var(--line); border-radius: 13px;
+            background: rgba(255,255,255,.035);
+        }
+        .file-row input { min-width: 0; width: 100%; }
+        .settings {
+            text-align: left; margin-top: 22px; padding: 20px;
+            border: 1px solid var(--line); border-radius: 19px;
+            background: rgba(255,255,255,.025);
+        }
+        .settings label.section-label {
+            display: block; margin: 7px 0 12px; font-weight: 800; font-size: .82rem;
+            color: #c9c2ff; text-transform: uppercase; letter-spacing: .085em;
+        }
+        .settings label.section-label:not(:first-child) { margin-top: 25px; }
+        .settings .choice {
+            display: flex; align-items: flex-start; gap: 11px; margin: 8px 0; padding: 12px 13px;
+            line-height: 1.5; cursor: pointer; border: 1px solid transparent; border-radius: 12px;
+            color: #c5cde4; background: rgba(255,255,255,.025); transition: border-color .2s, background .2s;
+        }
+        .settings .choice:hover { border-color: rgba(167,139,250,.32); background: rgba(139,92,246,.07); }
+        .settings .choice:has(input:checked) { border-color: rgba(167,139,250,.45); background: rgba(139,92,246,.105); color: #f7f5ff; }
+        .settings .choice b { color: #fff; }
+        .lang-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; margin:8px 0 14px; }
+        .lang-chip { display:flex; align-items:center; gap:8px; padding:8px 10px; border:1px solid rgba(167,139,250,.2); border-radius:10px; cursor:pointer; font-size:13px; }
+        .lang-chip:has(input:checked) { border-color: rgba(167,139,250,.6); background: rgba(139,92,246,.16); color:#fff; }
+        .lang-tools { display:flex; gap:8px; align-items:center; font-size:12px; opacity:.9; }
+        .lang-mini { background:rgba(139,92,246,.18); color:inherit; border:1px solid rgba(167,139,250,.35); border-radius:8px; padding:4px 10px; cursor:pointer; font-size:12px; }
+        .settings input[type="radio"] { accent-color: var(--pink); margin-top: 4px; flex: 0 0 auto; width: 16px; height: 16px; }
+        .quiz-name-input, .file-row input, input[type="text"] {
+            min-height: 44px; padding: 11px 13px; border-radius: 11px;
+            border: 1px solid rgba(173,190,255,.2); background: rgba(5,9,22,.7);
+            color: #fff; font: inherit; outline: none; transition: border-color .2s, box-shadow .2s;
+        }
+        .quiz-name-input { width: 100%; margin-top: 12px; }
+        .quiz-name-input:focus, .file-row input:focus { border-color: var(--violet); box-shadow: 0 0 0 3px rgba(167,139,250,.12); }
+        .quiz-name-input::placeholder, .file-row input::placeholder { color: #7d89a9; }
+        .hint { color: #99a5c4; font-size: .82rem; line-height: 1.55; margin-top: 9px; }
+        .btn {
+            width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px;
+            background: linear-gradient(100deg, #8b5cf6 0%, #c084fc 52%, #ec4899 100%);
+            color: #fff; border: 0; padding: 16px 24px; border-radius: 14px;
+            font-size: 1rem; cursor: pointer; font-weight: 800; letter-spacing: .01em;
+            transition: transform .2s, box-shadow .2s, filter .2s; margin-top: 22px;
+            box-shadow: 0 12px 28px rgba(139,92,246,.22);
+        }
+        .btn:hover { transform: translateY(-2px); filter: brightness(1.08); box-shadow: 0 16px 34px rgba(139,92,246,.3); }
+        .btn:active { transform: translateY(0); }
+        #status { margin-top: 16px; padding: 0; color: #aeb9d5; font-size: .9rem; line-height: 1.6; overflow-wrap: anywhere; }
+        #status:not(:empty) { padding: 13px 15px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.035); }
+        @media (max-width: 560px) {
+            body { padding: 14px 10px; align-items: flex-start; }
+            .container { padding: 24px 17px; border-radius: 22px; margin: auto 0; }
+            h1 { font-size: 2rem; gap: 11px; }
+            h1 i { flex-basis: 46px; height: 46px; border-radius: 14px; font-size: 21px; }
+            .container > p { font-size: .9rem; margin-bottom: 22px; }
+            .file-upload { min-height: 150px; padding: 23px 12px; }
+            .settings { padding: 14px; }
+            .file-row { grid-template-columns: 1fr; }
+            .btn { padding: 15px 12px; font-size: .94rem; }
+        }
+        .input-type-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0 0 18px; }
+        .type-card { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 16px; cursor: pointer; text-align: left;
+            border: 1px solid var(--glass-border); background: var(--panel-2); transition: border-color .2s, background .2s, transform .2s; }
+        .type-card:hover { transform: translateY(-1px); border-color: rgba(167,139,250,.35); }
+        .type-card input { position: absolute; opacity: 0; pointer-events: none; }
+        .type-card:has(input:checked) { border-color: var(--violet); background: rgba(139,92,246,.16); box-shadow: 0 0 0 1px rgba(155,140,255,.35) inset; }
+        .type-card .type-icon { width: 40px; height: 40px; flex: none; border-radius: 12px; display: grid; place-items: center; background: rgba(155,140,255,.14); color: var(--cyan); }
+        .type-card b { display: block; font-size: .95rem; }
+        .type-card small { display: block; color: var(--muted); font-size: .76rem; margin-top: 2px; line-height: 1.35; }
+        @media (max-width: 520px) { .input-type-switch { grid-template-columns: 1fr; } }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fa-solid fa-wand-magic-sparkles"></i> Quiz Generator</h1>
+        <p>Upload a text file formatted for the Quiz Bot to generate a playable HTML Quiz.</p>
+
+        <div class="input-type-switch" role="radiogroup" aria-label="Input type">
+            <label class="type-card"><input type="radio" name="input-type" value="txt" checked>
+                <span class="type-icon"><i class="fa-solid fa-file-lines"></i></span>
+                <span><b>TXT Upload</b><small>Quiz Bot format → HTML quiz (pehle jaisa)</small></span></label>
+            <label class="type-card"><input type="radio" name="input-type" value="html">
+                <span class="type-icon"><i class="fa-solid fa-language"></i></span>
+                <span><b>HTML Upload</b><small>Hindi + English test → 2 alag HTML quiz</small></span></label>
+        </div>
+        <div class="hint" id="html-mode-hint" style="display:none;margin:-6px 0 16px">
+            HTML test ke har question mein Hindi aur English saath likhe hote hain. Tool unhe alag karke do quiz banayega:
+            <b>"&lt;naam&gt; - English"</b> aur <b>"&lt;naam&gt; - Hindi"</b>. Kruti Dev font wali Hindi bhi automatically Unicode Hindi mein badal jaati hai.
+        </div>
+        
+        <label class="file-upload">
+            <i class="fa-solid fa-file-upload fa-2x" style="color: var(--telegram-blue); margin-bottom: 10px;"></i>
+            <div id="file-label">Click to select one or multiple TXT files</div>
+            <input type="file" id="file-input" accept=".txt,text/plain" multiple>
+        </label>
+        <div id="file-list"></div>
+        <div class="settings">
+            <label class="section-label">📚 Quiz arrangement</label>
+            <label class="choice"><input type="radio" name="quiz-mode" value="separate" checked> <span><b>Separate quizzes</b> — har TXT ki apni HTML file</span></label>
+            <label class="choice"><input type="radio" name="quiz-mode" value="combined"> <span><b>One combined quiz</b> — sabhi TXT ke questions ek HTML mein</span></label>
+            <label class="choice"><input type="radio" name="quiz-mode" value="sections"> <span><b>One quiz with multiple sections</b> — sabhi files ek HTML mein, har file ek alag section (naming se section ke naam)</span></label>
+            <div class="hint" id="sections-hint" style="display:none">Neeche jo naming chunenge (Original / Individual / Sequential) wahi naam har <b>section</b> ka hoga. Upar wale box mein poore quiz ka naam likhein.</div>
+            <label class="section-label">🏷️ HTML file naming</label>
+            <label class="choice"><input type="radio" name="name-mode" value="original" checked> <span><b>Original filename</b> — vision.txt → vision.html (name as-is)</span></label>
+            <label class="choice"><input type="radio" name="name-mode" value="individual"> <span><b>Set names individually</b> — har file ka naam alag type karein</span></label>
+            <label class="choice"><input type="radio" name="name-mode" value="sequence"> <span><b>Sequential names</b> — jaise VISION IAS 8801, 8802, 8803…</span></label>
+            <input type="text" id="sequence-name" class="quiz-name-input" placeholder="Base name, e.g. VISION IAS 8801" style="display:none">
+            <div class="hint" id="sequence-hint" style="display:none">Aakhri number automatically increment hoga. Example: VISION IAS 8801 → VISION IAS 8802.</div>
+            <input type="text" id="combined-name" class="quiz-name-input" placeholder="Combined quiz name (optional)" style="display:none">
+        </div>
+        <div class="settings" id="translate-settings">
+            <label class="section-label">🌐 Translate</label>
+            <label class="choice"><input type="radio" name="translate-mode" value="off" checked> <span><b>Translate OFF</b> — quiz usi language mein jo TXT mein hai (pehle jaisa)</span></label>
+            <label class="choice"><input type="radio" name="translate-mode" value="on"> <span><b>Translate ON</b> — original + translated quiz (internet chahiye)</span></label>
+            <div id="translate-options" style="display:none">
+                <label class="section-label" for="target-lang">🎯 Translate into (ek ya zyada languages chunein)</label>
+                <div id="target-lang"><div class="lang-tools"><button type="button" class="lang-mini" id="lang-all">Select all</button><button type="button" class="lang-mini" id="lang-none">Clear</button><span id="lang-count"></span></div><div class="lang-grid"><label class="lang-chip"><input type="checkbox" name="target-lang" value="hi" checked> <span>Hindi (हिन्दी)</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="en"> <span>English</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="bn"> <span>Bengali (বাংলা)</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="mr"> <span>Marathi (मराठी)</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="gu"> <span>Gujarati (ગુજરાતી)</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="pa"> <span>Punjabi (ਪੰਜਾਬੀ)</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="ta"> <span>Tamil (தமிழ்)</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="te"> <span>Telugu (తెలుగు)</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="kn"> <span>Kannada (ಕನ್ನಡ)</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="ml"> <span>Malayalam (മലയാളം)</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="or"> <span>Odia (ଓଡ଼ିଆ)</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="as"> <span>Assamese (অসমীয়া)</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="ur"> <span>Urdu (اردو)</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="ne"> <span>Nepali (नेपाली)</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="sa"> <span>Sanskrit (संस्कृतम्)</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="ar"> <span>Arabic (العربية)</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="fr"> <span>French</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="de"> <span>German</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="es"> <span>Spanish</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="ru"> <span>Russian (Русский)</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="zh-CN"> <span>Chinese (中文)</span></label><label class="lang-chip"><input type="checkbox" name="target-lang" value="ja"> <span>Japanese (日本語)</span></label></div></div>
+                <label class="section-label">🧩 Output</label>
+                <label class="choice"><input type="radio" name="bilingual-output" value="single" checked> <span><b>Ek hi quiz</b> — original + translated ek HTML mein, quiz mein language switch</span></label>
+                <label class="choice"><input type="radio" name="bilingual-output" value="separate"> <span><b>Alag-alag quiz</b> — har language ki alag HTML file (sab mein language switch)</span></label>
+            </div>
+        </div>
+        <button class="btn" id="generate-btn" style="display:none;"><i class="fa-solid fa-play"></i> Generate HTML Quiz(es)</button>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        /* =====================================================================
+         *  BILINGUAL HTML TEST SPLITTER
+         *  Reads an HTML test where every question/option/solution contains
+         *  English + Hindi together, and produces two clean question sets.
+         *  Hindi may be typed in legacy "Kruti Dev 010" font (ASCII codes) or
+         *  in Unicode Devanagari — both are detected; Kruti Dev is converted
+         *  to proper Unicode Hindi so it renders on every device.
+         * ===================================================================== */
+        const Bilingual = (function () {
+            // ---------------- Kruti Dev 010 → Unicode ----------------
+            // Multi-character sequences first (longest first), then single chars.
+            const KRUTI_PRE = [
+                ['b±', 'ईं'], ['bZ', 'ई'], ['vkS', 'औ'], ['vks', 'ओ'], ['v‚', 'ऑ'], ['vk', 'आ'], [',s', 'ऐ'],
+                ['Ê', 'ीZ'], ['±', 'Zं'], ['Ç', 'fa'], ['È', 'ीं']
+            ];
+            const KRUTI_MAP = {
+                // independent vowels
+                'v': 'अ', 'b': 'इ', 'Ã': 'ई', 'm': 'उ', 'Å': 'ऊ', ',': 'ए', '_': 'ऋ',
+                // consonants (full) and half forms (X्) — "्ा" is collapsed later
+                'd': 'क', 'D': 'क्', '[': 'ख्', 'x': 'ग', 'X': 'ग्', '?': 'घ्', 'Ä': 'घ्', '³': 'ङ',
+                'p': 'च', 'P': 'च्', 'N': 'छ', 't': 'ज', 'T': 'ज्', '>': 'झ', '÷': 'झ्', '¥': 'ञ',
+                'V': 'ट', 'B': 'ठ', 'M': 'ड', '<': 'ढ', '.': 'ण्',
+                'r': 'त', 'R': 'त्', 'F': 'थ्', 'n': 'द', '/': 'ध्', 'è': 'ध्', 'Ë': 'ध्', 'u': 'न', 'U': 'न्',
+                'i': 'प', 'I': 'प्', 'Q': 'फ', '¶': 'फ्', 'c': 'ब', 'C': 'ब्', 'H': 'भ्', 'e': 'म', 'E': 'म्',
+                ';': 'य', '¸': 'य्', 'j': 'र', 'y': 'ल', 'Y': 'ल्', 'G': 'ळ', 'o': 'व', 'O': 'व्',
+                "'": 'श्', 'Ü': 'श्', '"': 'ष्', 'l': 'स', 'L': 'स्', 'g': 'ह', 'º': 'ह्',
+                // conjuncts
+                '{': 'क्ष्', 'K': 'ज्ञ', '=': 'त्र', '«': 'त्र्', 'J': 'श्र', 'ä': 'क्त', 'Ø': 'क्र', 'ô': 'क्क',
+                'Ù': 'त्त्', 'Ÿ': 'त्त्', 'ù': 'त्न', 'é': 'न्न', '™': 'न्न्', 'í': 'द्द', 'Ì': 'द्द', '|': 'द्य', '}': 'द्व',
+                'æ': 'द्र', 'ç': 'प्र', 'Á': 'प्र', 'Ý': 'फ्र', 'ê': 'ट्ट', 'Í': 'ट्ट', 'ë': 'ट्ठ', 'Î': 'ट्ठ',
+                'ì': 'ड्ड', 'Ï': 'ड्ड', 'ï': 'ड्ढ', 'ã': 'ह्म', 'á': 'ह्य', 'à': 'ह्न', 'â': 'हृ',
+                ')': 'द्ध', '–': 'दृ', '—': 'कृ', 'Ñ': 'कृ', '#': 'रु', ':': 'रू',
+                // matras & signs
+                'k': 'ा', 'f': 'f', 'h': 'ी', 'q': 'ु', 'w': 'ू', '`': 'ृ', 's': 'े', 'S': 'ै', '‚': 'ॉ', 'W': 'ॅ',
+                'a': 'ं', '¡': 'ँ', '%': 'ः', '~': '्', 'z': '्र', 'ª': '्र', 'î': '्य', '+': '़', 'Z': 'Z',
+                // punctuation
+                'A': '।', '-': '.', '&': '-', '@': '/', ']': ',', '\\': '?', '(': ';', '^': '‘', '*': '’',
+                'Þ': '“', 'ß': '”', '¼': '(', '½': ')', '¿': '{', 'À': '}', '¾': '=', '$': '+', '»': '≈', 'Œ': '॰',
+                'å': '०', 'ƒ': '१', '„': '२', '…': '३', '†': '४', '‡': '५', 'ˆ': '६', '‰': '७', 'Š': '८', '‹': '९'
+            };
+            const CONS = '[\\u0915-\\u0939\\u0958-\\u095F]';
+            const CLUSTER = `(?:${CONS}\\u093C?\\u094D)*${CONS}\\u093C?`;
+            const MATRAS = '[\\u093E-\\u094C\\u0962\\u0963]*[\\u0901\\u0902]?';
+            const RE_IMATRA = new RegExp(`f([\\u0902]?)(${CLUSTER})`, 'g');
+            const RE_REPH = new RegExp(`(${CLUSTER}${MATRAS})Z`, 'g');
+
+            function krutiToUnicode(src) {
+                if (!src) return '';
+                let s = src;
+                // Æ = ि + reph on the following letter (e.g. ykHkkÆFk;ksa → लाभार्थियों)
+                s = s.replace(/Æ([^\s])(k?)/g, 'f$1$2Z');
+                for (const [a, b] of KRUTI_PRE) s = s.split(a).join(b);
+                let out = '';
+                for (const ch of s) out += (KRUTI_MAP[ch] !== undefined ? KRUTI_MAP[ch] : ch);
+                out = out
+                    .replace(/\u094D\u093E/g, '')            // half letter + ा  → full letter
+                    .replace(/अा/g, 'आ').replace(/आे/g, 'ओ').replace(/आै/g, 'औ').replace(/अॉ/g, 'ऑ')
+                    .replace(/एे/g, 'ऐ')
+                    .replace(/ाे/g, 'ो').replace(/ाै/g, 'ौ').replace(/ाॅ/g, 'ॉ');
+                // short-i matra is typed BEFORE the consonant cluster in Kruti Dev
+                out = out.replace(RE_IMATRA, (m, anus, cl) => cl + 'ि' + anus);
+                // reph (Z) is typed AFTER the syllable it sits on
+                out = out.replace(RE_REPH, 'र्$1');
+                out = out.replace(/f/g, 'ि').replace(/Z/g, 'र्');
+                out = out.replace(/\u094D\u094D+/g, '\u094D');
+                return out;
+            }
+
+            // ---------------- helpers ----------------
+            const BLOCK = new Set(['P', 'DIV', 'TABLE', 'TBODY', 'THEAD', 'TFOOT', 'TR', 'TD', 'TH', 'OL', 'UL', 'LI',
+                'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'PRE', 'SECTION', 'ARTICLE', 'CENTER', 'DL', 'DT', 'DD',
+                'HR', 'FIGURE', 'HEADER', 'FOOTER', 'PCOL', 'CAPTION']);
+            const FORMAT = { B: 'b', STRONG: 'b', I: 'i', EM: 'i', U: 'u', SUB: 'sub', SUP: 'sup' };
+            const SKIP = new Set(['SCRIPT', 'STYLE', 'META', 'LINK', 'TITLE', 'HEAD', 'NOSCRIPT', 'O:P']);
+            const BR = '\u0003', KS = '\u0001', KE = '\u0002';
+            const DEV = /[\u0900-\u097F]/;
+            const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+            function fontOf(el, inherited) {
+                if (!el || el.nodeType !== 1) return inherited;
+                const st = el.getAttribute('style') || '';
+                const m = st.match(/font-family\s*:\s*([^;]+)/i);
+                const face = el.getAttribute('face');
+                return m ? m[1] : (face || inherited);
+            }
+            const isKrutiFont = f => /kruti|devlys/i.test(f || '');
+            const isSymbolFont = f => /symbol|wingding|webding/i.test(f || '');
+            const isRupeeFont = f => /rupee/i.test(f || '');
+            const isBlockEl = n => n.nodeType === 1 && BLOCK.has(n.tagName.toUpperCase());
+            const hasBlockDesc = n => n.nodeType === 1 && !!n.querySelector('p,div,table,tr,td,ol,ul,li,h1,h2,h3,h4,h5,h6,blockquote,pre,dl,dd,dt,pcol,section');
+
+            const SYMBOL = {"a": "α", "b": "β", "c": "χ", "d": "δ", "e": "ε", "f": "φ", "g": "γ", "h": "η", "i": "ι", "j": "ϕ", "k": "κ", "l": "λ", "m": "μ", "n": "ν", "o": "ο", "p": "π", "q": "θ", "r": "ρ", "s": "σ", "t": "τ", "u": "υ", "v": "ϖ", "w": "ω", "x": "ξ", "y": "ψ", "z": "ζ", "A": "Α", "B": "Β", "C": "Χ", "D": "Δ", "E": "Ε", "F": "Φ", "G": "Γ", "H": "Η", "I": "Ι", "J": "ϑ", "K": "Κ", "L": "Λ", "M": "Μ", "N": "Ν", "O": "Ο", "P": "Π", "Q": "Θ", "R": "Ρ", "S": "Σ", "T": "Τ", "U": "Υ", "V": "ς", "W": "Ω", "X": "Ξ", "Y": "Ψ", "Z": "Ζ", "®": "→", "¬": "←", "«": "↔", "­": "↑", "¯": "↓", "³": "≥", "£": "≤", "¹": "≠", "»": "≈", "´": "×", "¸": "÷", "±": "±", "°": "°", "·": "•", "¥": "∞", "µ": "∝", "¶": "∂", "Ö": "√", "Þ": "⇒", "Û": "⇔", "Ü": "⇐", "¨": "♦", "§": "♣", "©": "♥", "ª": "♠", "¢": "′", "²": "″", "º": "≡", "@": "≅", "\\": "∴", "^": "⊥", "~": "∼", "\"": "∀", "$": "∃", "'": "∋", "Î": "∈", "Ï": "∉", "Ç": "∩", "È": "∪", "Ì": "⊂", "É": "⊃", "Ð": "∠", "Ñ": "∇", "å": "∑", "Õ": "∏", "ò": "∫", "¼": "…", "×": "·", "Ø": "¬", "Ù": "∧", "Ú": "∨"};
+            const WINGDINGS = {"§": "▪", "ð": "⇨", "Ø": "➢", "ü": "✓", "û": "✗", "l": "●", "n": "■", "q": "❑", "v": "❖", "è": "➔", "Ÿ": "•", "w": "◆", "u": "◆", "ß": "⇦", "à": "→", "Ü": "➢", "J": "☺", "ê": "➔", "F": "☞"};
+            // ---------------- inline tokenisation ----------------
+            // Each token: {lang:'en'|'hi'|'n'|'sep', html, media}
+            const KRUTI_NEUTRAL = /^[\s0-9&@\]\-\^\*¼½¿ÀÞßA\\(!¾]*$/;
+            function tokenizeText(text, font, fmt) {
+                const wrap = h => fmt.reduceRight((acc, t) => `<${t}>${acc}</${t}>`, h);
+                if (isKrutiFont(font)) {
+                    const lang = KRUTI_NEUTRAL.test(text) ? 'n' : 'hi';
+                    return [{ lang, html: wrap(KS + esc(text) + KE), kruti: true }];
+                }
+                if (isSymbolFont(font)) {
+                    // Greek letters, arrows and bullets typed in Symbol / Wingdings fonts → real Unicode
+                    const table = /wingding|webding/i.test(font) ? WINGDINGS : SYMBOL;
+                    let t = '';
+                    for (const ch of text) {
+                        const c = ch.charCodeAt(0) >= 0xF020 && ch.charCodeAt(0) <= 0xF0FF ? String.fromCharCode(ch.charCodeAt(0) - 0xF000) : ch;
+                        t += /\s/.test(c) ? c : (table[c] || (table === WINGDINGS ? '•' : c));
+                    }
+                    return [{ lang: 'n', html: wrap(esc(t)) }];
+                }
+                if (isRupeeFont(font)) return [{ lang: 'n', html: wrap(text.trim() ? '₹' : text) }];
+                const out = [];
+                const re = /[\u0900-\u097F\u200C\u200D]+|[A-Za-z\u00C0-\u024F\u2019']+|\d+(?:[.,]\d+)*|\s+|[\/|]|./gu;
+                let m;
+                while ((m = re.exec(text))) {
+                    const t = m[0];
+                    let lang = 'n';
+                    if (DEV.test(t)) lang = 'hi';
+                    else if (/^(?:[IVX]{1,5}|[ivx]{1,5})$/.test(t)) lang = 'n';   // roman numerals (List-II) are shared
+                    else if (/[A-Za-z]{2,}/.test(t)) lang = 'en';
+                    else if (/^[\/|]$/.test(t)) lang = 'sep';
+                    out.push({ lang, html: wrap(esc(t.replace(/[\uF000-\uF0FF]/g, '•'))) });
+                }
+                return out;
+            }
+
+            function collectInline(node, font, fmt, out) {
+                if (node.nodeType === 3) {
+                    if (node.nodeValue) out.push(...tokenizeText(node.nodeValue, font, fmt));
+                    return;
+                }
+                if (node.nodeType !== 1) return;
+                const tag = node.tagName.toUpperCase();
+                if (SKIP.has(tag)) return;
+                if (tag === 'BR') { out.push({ lang: 'n', html: BR }); return; }
+                if (tag === 'IMG') {
+                    const src = node.getAttribute('src');
+                    if (src) {
+                        const w = parseInt(node.getAttribute('width'), 10);
+                        const style = 'max-width:100%;height:auto;vertical-align:middle;' + (w ? `width:${Math.min(w, 600)}px;` : '');
+                        out.push({ lang: 'n', html: `<img src="${src.replace(/"/g, '&quot;')}" style="${style}" alt="">`, media: true });
+                    }
+                    return;
+                }
+                const f = fontOf(node, font);
+                const fm = FORMAT[tag] && !fmt.includes(FORMAT[tag]) ? fmt.concat(FORMAT[tag]) : fmt;
+                for (const c of node.childNodes) collectInline(c, f, fm, out);
+            }
+
+            const tokText = t => t.html.replace(/<[^>]+>/g, '').replace(/[\u0001\u0002]/g, '');
+            const isBlankTok = t => !t.media && !tokText(t).replace(BR, '').trim();
+
+            // Splits a token stream into {en:[tokens], hi:[tokens]}
+            function splitTokens(tokens) {
+                const letteredIdx = tokens.map((t, i) => (t.lang === 'en' || t.lang === 'hi') ? i : -1).filter(i => i >= 0);
+                const langs = new Set(letteredIdx.map(i => tokens[i].lang));
+                const res = { en: [], hi: [] };
+                if (!langs.size) return null; // neutral
+                if (langs.size === 1) {
+                    const L = [...langs][0];
+                    res[L] = tokens.filter(t => t.lang !== 'sep' || true);
+                    return res;
+                }
+                // owner for each token
+                const owner = new Array(tokens.length);
+                letteredIdx.forEach(i => owner[i] = tokens[i].lang);
+                const first = letteredIdx[0], last = letteredIdx[letteredIdx.length - 1];
+                // leading neutral: duplicate short labels such as "1." "(a)" "(ii)"
+                const lead = tokens.slice(0, first);
+                const leadTxt = lead.map(tokText).join('');
+                const leadOwner = /^\s*(\(?\s*(\d{1,2}|[ivx]{1,4}|[a-dA-D])\s*[.)]|Q\.?\s*\d+[.)]?)?\s*$/i.test(leadTxt) && leadTxt.trim() ? 'both' : tokens[first].lang;
+                for (let i = 0; i < first; i++) owner[i] = leadOwner;
+                for (let i = last + 1; i < tokens.length; i++) owner[i] = tokens[last].lang;
+                // gaps between lettered tokens
+                for (let k = 0; k < letteredIdx.length - 1; k++) {
+                    const a = letteredIdx[k], b = letteredIdx[k + 1];
+                    const la = tokens[a].lang, lb = tokens[b].lang;
+                    if (b - a <= 1) continue;
+                    if (la === lb) { for (let i = a + 1; i < b; i++) owner[i] = la; continue; }
+                    // language switch: split at the last separator "/" or "|" (or line break)
+                    let cut = -1;
+                    for (let i = b - 1; i > a; i--) if (tokens[i].lang === 'sep') { cut = i; break; }
+                    if (cut < 0) for (let i = a + 1; i < b; i++) if (tokens[i].html === BR) { cut = i; break; }
+                    if (cut < 0) {
+                        // no separator: numbers/brackets before the switch stay with the previous language,
+                        // but an opening bracket right before the new language goes with it
+                        cut = b;
+                        while (cut - 1 > a && /^[\s(\[“‘"']*$/.test(tokText(tokens[cut - 1]))) cut--;
+                    }
+                    for (let i = a + 1; i < b; i++) owner[i] = i < cut ? la : (i === cut && tokens[i].lang === 'sep' ? 'drop' : lb);
+                }
+                tokens.forEach((t, i) => {
+                    const o = owner[i];
+                    if (o === 'drop') return;
+                    if (o === 'both') { res.en.push(t); res.hi.push(t); }
+                    else res[o].push(t);
+                });
+                return res;
+            }
+
+            // Finalise a token list into an HTML string (inline only, no raw newlines)
+            function finish(tokens, lang) {
+                let h = tokens.map(t => t.html).join('');
+                // merge adjacent Kruti runs (a word can be split across spans), then convert
+                h = h.replace(/\u0002((?:<\/?(?:b|i|u|sub|sup)>)*)\u0001/g, '$1');
+                h = h.replace(/\u0001([\s\S]*?)\u0002/g, (m, raw) => {
+                    // convert text parts only, keep inline tags
+                    return raw.split(/(<[^>]+>)/).map(p => p.startsWith('<') ? p : esc(krutiToUnicode(unesc(p)))).join('');
+                });
+                h = h.replace(/[ \t\r\n\u00A0]+/g, ' ');
+                h = h.replace(/<\/(b|i|u|sub|sup)><\1>/g, '');
+                h = h.replace(/<(b|i|u|sub|sup)>(\s*)<\/\1>/g, '$2');
+                h = h.replace(/ ?\u0003 ?/g, BR);
+                // tidy separators left at the edges after splitting
+                if (lang !== 'n') {
+                    h = h.replace(/\s*[\/|]\s*((?:<\/(?:b|i|u|sub|sup)>\s*)*)$/, '$1');
+                    h = h.replace(/^((?:<(?:b|i|u|sub|sup)>\s*)*)\s*[\/|]\s*/, '$1');
+                }
+                h = h.replace(/^[\s\u0003]+|[\s\u0003]+$/g, '');
+                return h;
+            }
+            const sigOf = h => String(h || '').replace(/<[^>]+>/g, '').replace(/[\s\u0003]+/g, '').toLowerCase();
+            const unesc = s => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+
+            // ---------------- block level ----------------
+            // A "result" = {kind:'en'|'hi'|'n'|'mixed', en:[blocks], hi:[blocks], n:[blocks], media, sig}
+            function inlineChunk(nodes, font) {
+                const toks = [];
+                nodes.forEach(n => collectInline(n, font, [], toks));
+                const media = toks.some(t => t.media);
+                const sp = splitTokens(toks);
+                if (!sp) {
+                    const h = finish(toks, 'n');
+                    return { kind: 'n', n: h ? [h] : [], en: [], hi: [], media, sig: h.replace(/<[^>]+>/g, '').replace(/\s+/g, '') };
+                }
+                const en = sp.en.length ? finish(sp.en, 'en') : '';
+                const hi = sp.hi.length ? finish(sp.hi, 'hi') : '';
+                const kind = en && hi ? 'mixed' : en ? 'en' : 'hi';
+                return { kind, en: en ? [en] : [], hi: hi ? [hi] : [], n: [], media, sig: sigOf(kind === 'hi' ? hi : en) };
+            }
+
+            function processNode(node, font) {
+                const tag = node.tagName.toUpperCase();
+                const f = fontOf(node, font);
+                if (tag === 'TABLE') return processTable(node, f);
+                if (tag === 'HR') return { kind: 'n', n: [], en: [], hi: [], media: false, sig: '' };
+                if (tag === 'OL' || tag === 'UL') return processList(node, f);
+                if (!hasBlockDesc(node) && !isBlockEl(node)) return inlineChunk([node], font);
+                if (!hasBlockDesc(node)) return inlineChunk(Array.from(node.childNodes), f);
+                return processContainer(node, f);
+            }
+
+            // Assemble child results into en/hi block lists, with smart placement of neutral blocks
+            function assemble(results) {
+                const out = { en: [], hi: [] };
+                const kinds = results.map(r => r.kind);
+                const has = k => kinds.some(x => x === k || x === 'mixed');
+                const bilingual = has('en') && has('hi');
+                // neutral text that appears twice (once per language) is NOT shared
+                const sigCount = {};
+                results.forEach(r => { if (r.kind === 'n' && r.sig) sigCount[r.sig] = (sigCount[r.sig] || 0) + 1; });
+                const ctxBefore = i => { for (let j = i - 1; j >= 0; j--) if (kinds[j] !== 'n') return kinds[j]; return null; };
+                const ctxAfter = i => { for (let j = i + 1; j < kinds.length; j++) if (kinds[j] !== 'n') return kinds[j]; return null; };
+                // media blocks: if images appear in both language sections, each belongs to its own section
+                const mediaCtx = new Set(results.map((r, i) => r.kind === 'n' && r.media ? (ctxBefore(i) || ctxAfter(i)) : null).filter(Boolean));
+                const mediaSplit = mediaCtx.has('en') && mediaCtx.has('hi');
+                // an English line repeated inside the Hindi section (e.g. "Source: ..." written twice)
+                const seenEn = new Set(); let seenHi = false;
+                const dupEn = results.map(r => {
+                    let d = false;
+                    if (r.kind === 'en' && r.sig) { d = seenHi && seenEn.has(r.sig); seenEn.add(r.sig); }
+                    if (r.kind === 'hi' || r.kind === 'mixed') seenHi = true;
+                    return d;
+                });
+                results.forEach((r, i) => {
+                    if (r.kind === 'en' && dupEn[i] && bilingual) out.hi.push(...r.en);
+                    else if (r.kind === 'en') out.en.push(...r.en);
+                    else if (r.kind === 'hi') out.hi.push(...r.hi);
+                    else if (r.kind === 'mixed') { out.en.push(...r.en); out.hi.push(...r.hi); }
+                    else {
+                        if (!r.n.length) return;
+                        const ctx = ctxBefore(i) || ctxAfter(i);
+                        const shared = !bilingual || (r.media ? !mediaSplit : !(sigCount[r.sig] > 1));
+                        if (shared || !ctx || ctx === 'mixed') { out.en.push(...r.n); out.hi.push(...r.n); }
+                        else out[ctx].push(...r.n);
+                    }
+                });
+                const media = results.some(r => r.media);
+                if (!has('en') && !has('hi')) {
+                    const n = results.flatMap(r => r.n);
+                    return { kind: 'n', n, en: [], hi: [], media, sig: sigOf(n.join('')) };
+                }
+                if (!bilingual) return has('en') ? { kind: 'en', en: out.en, hi: [], n: [], media, sig: sigOf(out.en.join('')) }
+                    : { kind: 'hi', en: [], hi: out.hi, n: [], media, sig: sigOf(out.hi.join('')) };
+                return { kind: 'mixed', en: out.en, hi: out.hi, n: [], media };
+            }
+
+            function childChunks(el, font) {
+                const results = [];
+                let inl = [];
+                const flush = () => {
+                    if (inl.length) { const r = inlineChunk(inl, font); if (r.kind !== 'n' || r.n.length) results.push(r); inl = []; }
+                };
+                for (const c of el.childNodes) {
+                    if (c.nodeType === 1 && SKIP.has(c.tagName.toUpperCase())) continue;
+                    if (c.nodeType === 1 && (isBlockEl(c) || hasBlockDesc(c))) { flush(); results.push(processNode(c, font)); }
+                    else inl.push(c);
+                }
+                flush();
+                return results;
+            }
+            function processContainer(el, font) { return assemble(childChunks(el, font)); }
+
+            function processList(el, font) {
+                const ordered = el.tagName.toUpperCase() === 'OL';
+                let start = parseInt(el.getAttribute('start'), 10); if (isNaN(start)) start = 1;
+                const type = (el.getAttribute('type') || '1');
+                const items = Array.from(el.children).filter(c => c.tagName.toUpperCase() === 'LI');
+                const one = arr => arr.length > 1 ? [arr.join(BR)] : arr;
+                const results = items.map(li => {
+                    const r = processContainerOrInline(li, fontOf(li, font));
+                    return { ...r, en: one(r.en), hi: one(r.hi), n: one(r.n) };
+                });
+                const a = assemble(results);
+                const label = (n) => {
+                    if (!ordered) return '• ';
+                    if (type === 'a') return String.fromCharCode(96 + n) + '. ';
+                    if (type === 'A') return String.fromCharCode(64 + n) + '. ';
+                    if (/i/i.test(type)) { const r = toRoman(n); return (type === 'I' ? r.toUpperCase() : r) + '. '; }
+                    return n + '. ';
+                };
+                const num = arr => arr.map((b, i) => label(start + i) + b);
+                if (a.kind === 'n') return { ...a, n: num(a.n) };
+                return { ...a, en: num(a.en), hi: num(a.hi) };
+            }
+            function processContainerOrInline(el, font) {
+                return hasBlockDesc(el) ? processContainer(el, font) : inlineChunk(Array.from(el.childNodes), font);
+            }
+            function toRoman(n) {
+                const m = [[10, 'x'], [9, 'ix'], [5, 'v'], [4, 'iv'], [1, 'i']]; let r = '';
+                for (const [v, s] of m) while (n >= v) { r += s; n -= v; } return r;
+            }
+
+            // Tables: detects language-per-row, language-per-column, or mixed cells
+            const TD_STYLE = 'border:1px solid rgba(128,128,128,.45);padding:4px 7px;vertical-align:top';
+            function processTable(table, font) {
+                const rows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.closest('table') === table);
+                const grid = rows.map(tr => Array.from(tr.children).filter(c => /^(TD|TH)$/i.test(c.tagName)).map(td => {
+                    const r = processContainerOrInline(td, fontOf(td, font));
+                    const attrs = ['colspan', 'rowspan'].filter(k => td.getAttribute(k) && td.getAttribute(k) !== '1').map(k => ` ${k}="${parseInt(td.getAttribute(k), 10) || 1}"`).join('');
+                    return { r, attrs, th: /TH/i.test(td.tagName) };
+                }));
+                const media = grid.some(row => row.some(c => c.r.media));
+                const cellHtml = (c, lang) => {
+                    const parts = c.r.kind === 'n' ? c.r.n : (c.r[lang].length ? c.r[lang] : c.r[lang === 'en' ? 'hi' : 'en']);
+                    return `<${c.th ? 'th' : 'td'}${c.attrs} style="${TD_STYLE}">${parts.join('<br>').replace(/\u0003/g, '<br>').replace(/\n/g, '<br>')}</${c.th ? 'th' : 'td'}>`;
+                };
+                const wrapT = trs => trs.length ? `<table style="border-collapse:collapse;width:100%;margin:6px 0;font-size:inherit">${trs.join('')}</table>` : '';
+                // column mode?
+                const colKinds = {};
+                grid.forEach(row => row.forEach((c, ci) => { if (c.r.kind !== 'n') (colKinds[ci] = colKinds[ci] || new Set()).add(c.r.kind); }));
+                const enCols = Object.keys(colKinds).filter(k => colKinds[k].size === 1 && colKinds[k].has('en'));
+                const hiCols = Object.keys(colKinds).filter(k => colKinds[k].size === 1 && colKinds[k].has('hi'));
+                const noSpans = !grid.some(row => row.some(c => c.attrs));
+                if (enCols.length && hiCols.length && noSpans && !Object.values(colKinds).some(s => s.has('mixed'))) {
+                    const keep = lang => ci => !(lang === 'en' ? hiCols : enCols).includes(String(ci));
+                    const build = lang => wrapT(grid.map(row => {
+                        const cells = row.map((c, ci) => keep(lang)(ci) ? cellHtml(c, lang) : '').join('');
+                        return cells ? `<tr>${cells}</tr>` : '';
+                    }).filter(Boolean));
+                    return { kind: 'mixed', en: [build('en')], hi: [build('hi')], n: [], media };
+                }
+                // row mode
+                const rowResults = grid.map(row => {
+                    const ks = new Set(row.map(c => c.r.kind).filter(k => k !== 'n'));
+                    const kind = !ks.size ? 'n' : ks.size === 1 ? [...ks][0] : 'mixed';
+                    const en = `<tr>${row.map(c => cellHtml(c, 'en')).join('')}</tr>`;
+                    const hi = `<tr>${row.map(c => cellHtml(c, 'hi')).join('')}</tr>`;
+                    const sig = row.map(c => c.r.n.join('')).join('|').replace(/<[^>]+>/g, '').replace(/\s+/g, '');
+                    if (kind === 'n') return { kind, n: [en], en: [], hi: [], media: row.some(c => c.r.media), sig };
+                    if (kind === 'en') return { kind, en: [en], hi: [], n: [] };
+                    if (kind === 'hi') return { kind, hi: [hi], en: [], n: [] };
+                    return { kind, en: [en], hi: [hi], n: [] };
+                });
+                const a = assemble(rowResults);
+                if (a.kind === 'n') return { kind: 'n', n: [wrapT(a.n)], en: [], hi: [], media, sig: a.sig };
+                return { kind: a.kind, en: a.en.length ? [wrapT(a.en)] : [], hi: a.hi.length ? [wrapT(a.hi)] : [], n: [], media };
+            }
+
+            // ---------------- public: split one HTML field ----------------
+            function splitHtml(html) {
+                const doc = new DOMParser().parseFromString(`<div id="__bq">${html || ''}</div>`, 'text/html');
+                const root = doc.getElementById('__bq');
+                const r = processContainer(root, '');
+                const join = arr => arr.filter(Boolean).join('\n').replace(/\u0003/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+                if (r.kind === 'n') { const t = join(r.n); return { en: t, hi: t }; }
+                let en = join(r.en), hi = join(r.hi);
+                // a field present in only one language (e.g. proper nouns, numbers) is used for both
+                if (!en) en = hi; if (!hi) hi = en;
+                return { en, hi };
+            }
+
+            // ---------------- read questions out of an uploaded HTML test ----------------
+            function extractJsonArray(src, startIdx) {
+                let depth = 0, inStr = false, q = '', escp = false;
+                for (let i = startIdx; i < src.length; i++) {
+                    const c = src[i];
+                    if (inStr) { if (escp) escp = false; else if (c === '\\') escp = true; else if (c === q) inStr = false; continue; }
+                    if (c === '"' || c === "'") { inStr = true; q = c; continue; }
+                    if (c === '[' || c === '{') depth++;
+                    else if (c === ']' || c === '}') { depth--; if (depth === 0) return src.slice(startIdx, i + 1); }
+                }
+                return null;
+            }
+            function parseTestHtml(src) {
+                const candidates = [];
+                const re = /(?:const|let|var)\s+(questions|questionsData|quizData|qd)\s*=\s*([\[{])/g;
+                let m;
+                while ((m = re.exec(src))) candidates.push(m.index + m[0].length - 1);
+                // generic fallback: any JSON array containing "question"
+                const gi = src.search(/\[\s*\{\s*"(id|question)"/);
+                if (gi >= 0) candidates.push(gi);
+                for (const idx of candidates) {
+                    const raw = extractJsonArray(src, idx);
+                    if (!raw) continue;
+                    let data;
+                    try { data = JSON.parse(raw); } catch (e) { try { data = (new Function('return ' + raw))(); } catch (e2) { continue; } }
+                    if (data && !Array.isArray(data) && Array.isArray(data.q)) data = data.q;
+                    if (!Array.isArray(data) || !data.length) continue;
+                    const qs = data.map(normaliseQuestion).filter(Boolean);
+                    if (qs.length) {
+                        const t = src.match(/<title>([\s\S]*?)<\/title>/i);
+                        return { questions: qs, title: t ? t[1].replace(/\|.*$/, '').trim() : '' };
+                    }
+                }
+                return { questions: [], title: '' };
+            }
+            function normaliseQuestion(q) {
+                if (!q || typeof q !== 'object') return null;
+                const text = q.question ?? q.question_text ?? q.txt ?? q.q;
+                let opts = [];
+                if (Array.isArray(q.options)) opts = q.options.map(o => typeof o === 'string' ? o : (o.text ?? o.option ?? ''));
+                else if (Array.isArray(q.opts)) opts = q.opts;
+                else for (let i = 1; i <= 10; i++) { const k = q['option_' + i] ?? q['option' + i]; if (k == null || k === '') break; opts.push(k); }
+                if (!text || opts.length < 2) return null;
+                let ci = 0;
+                if (q.ci != null) ci = +q.ci;
+                else if (q.answer != null) {
+                    const a = String(q.answer).trim();
+                    if (/^\d+$/.test(a)) ci = +a - 1;
+                    else if (/^[A-Ja-j]$/.test(a)) ci = a.toUpperCase().charCodeAt(0) - 65;
+                } else if (Array.isArray(q.options)) ci = Math.max(0, q.options.findIndex(o => o && (o.isCorrect || o.correct)));
+                if (!(ci >= 0 && ci < opts.length)) ci = 0;
+                return { question: String(text), options: opts.map(String), ci, solution: String(q.solution_text ?? q.solution ?? q.explanation ?? q.exp ?? '') };
+            }
+
+            // Build {en:[...], hi:[...]} in the same shape the TXT parser produces
+            function splitTest(src) {
+                const { questions, title } = parseTestHtml(src);
+                const en = [], hi = [];
+                let hindiFound = false;
+                questions.forEach(q => {
+                    const Q = splitHtml(q.question);
+                    const O = q.options.map(splitHtml);
+                    const S = splitHtml(q.solution);
+                    if (Q.en !== Q.hi) hindiFound = true;
+                    const mk = lang => ({
+                        question: Q[lang],
+                        options: O.map((o, i) => ({ text: o[lang], isCorrect: i === q.ci })),
+                        explanation: S[lang] || 'No explanation provided.'
+                    });
+                    en.push(mk('en')); hi.push(mk('hi'));
+                });
+                return { en, hi, title, count: questions.length, hindiFound };
+            }
+
+            return { splitTest, splitHtml, krutiToUnicode, parseTestHtml };
+        })();
+
+        let parsedQuestions = [];
+        
+        function parseQuizFile(text) {
+            parsedQuestions = [];
+            if (!text) return false;
+            
+            const blocks = text.split(/(?=^\s*Q\s*\.?\s*\d+\s*[\.)])/gim);
+            
+            for (let block of blocks) {
+                block = block.trim();
+                if (!block) continue;
+                
+                const qPattern = /^\s*Q\s*\.?\s*\d+\s*[\.)]/i;
+                if (!qPattern.test(block)) {
+                    continue;
+                }
+                
+                let questionText = "";
+                let options = [];
+                let explanation = "";
+                
+                if (block.includes('😂')) {
+                    // Format B: Converted format with 😂 separator
+                    const parts = block.split('😂');
+                    questionText = parts[0].trim();
+                    questionText = questionText.replace(/^\s*Q\s*\.?\s*\d+\s*[\.)]\s*/i, '');
+                    
+                    const rest = parts[1] || '';
+                    const lines = rest.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+                    
+                    let explanationStarted = false;
+                    let explanationLines = [];
+                    
+                    for (let line of lines) {
+                        if (/^Ex\s*:\s*/i.test(line)) {
+                            explanationStarted = true;
+                            explanationLines.push(line);
+                        } else if (explanationStarted) {
+                            explanationLines.push(line);
+                        } else {
+                            const isCorrect = line.includes('✅');
+                            const cleanText = line.replace(/✅/g, '').trim();
+                            options.push({ text: cleanText, isCorrect: isCorrect });
+                        }
+                    }
+                    explanation = explanationLines.join('\n').trim();
+                } else {
+                    // Format A: Raw format without 😂
+                    const lines = block.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+                    if (lines.length < 2) continue;
+                    
+                    let firstLine = lines[0];
+                    questionText = firstLine.replace(/^\s*Q\s*\.?\s*\d+\s*[\.)]\s*/i, '').trim();
+                    
+                    let explanationStarted = false;
+                    let explanationLines = [];
+                    
+                    for (let i = 1; i < lines.length; i++) {
+                        const line = lines[i];
+                        if (/^Ex\s*:\s*/i.test(line)) {
+                            explanationStarted = true;
+                            explanationLines.push(line);
+                        } else if (explanationStarted) {
+                            explanationLines.push(line);
+                        } else {
+                            const isCorrect = line.includes('✅');
+                            const cleanText = line.replace(/✅/g, '').trim();
+                            options.push({ text: cleanText, isCorrect: isCorrect });
+                        }
+                    }
+                    explanation = explanationLines.join('\n').trim();
+                }
+                
+                if (questionText && options.length >= 2) {
+                    if (!options.some(o => o.isCorrect)) {
+                        options[0].isCorrect = true;
+                    }
+                    parsedQuestions.push({
+                        question: questionText,
+                        options: options,
+                        explanation: explanation || "No explanation provided."
+                    });
+                }
+            }
+            return parsedQuestions.length > 0;
+        }
+
+        function showMockLeaderboard() {
+            const userScore = 0;
+            const mockUsers = [
+                { username: "@PolityKing", score: 92.50, streak: 15 },
+                { username: "@IAS_Dreamer", score: 81.33, streak: 10 },
+                { username: "@AntigravityBot", score: 76.66, streak: 9 },
+                { username: "You 👤", score: userScore, streak: 0 },
+                { username: "@NewtonJr", score: 54.00, streak: 5 }
+            ];
+            
+            // Sort
+            mockUsers.sort((a,b) => b.score - a.score);
+            
+            let leadText = "🥇 <b>Leaderboard Results:</b>\n\n";
+            mockUsers.forEach((u, idx) => {
+                const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : "🔹";
+                leadText += `${medal} <b>${u.username}</b> - Score: <b>${u.score.toFixed(2)}</b> (Streak: 🔥 ${u.streak})\n`;
+            });
+            printMsg('bot', leadText, true);
+        }
+        // Helper to generate playable HTML content based on output.html
+        
+        function generatePlayableHtml(quiz) {
+            const qd_q = quiz.questions.map((q, idx) => {
+                const ci = q.options.findIndex(o => o.isCorrect);
+                return {
+                    id: idx,
+                    txt: q.question,
+                    ref: "",
+                    opts: q.options.map(o => o.text),
+                    ci: ci !== -1 ? ci : 0,
+                    exp: q.explanation
+                };
+            });
+
+            const quizNameEscaped = quiz.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+            const qdObj = { q: qd_q, m: null, tt: 60 * quiz.questions.length, nm: 0.66 };
+            if (quiz.sections && quiz.sections.length > 1) {
+                qdObj.sec = quiz.sections.map(x => String(x.n || 'Section').replace(/&/g, '&amp;').replace(/</g, '&lt;'));
+                let k = 0;
+                quiz.sections.forEach((x, si) => { for (let j = 0; j < x.c && k < qd_q.length; j++, k++) qd_q[k].s = si; });
+            }
+            let langOptionsHtml = '';
+            if (quiz.langs && quiz.langs.codes && quiz.langs.codes.length > 1) {
+                const data = {};
+                quiz.langs.codes.forEach(code => {
+                    data[code] = quiz.langs.sets[code].map(q => ({ txt: q.question, opts: q.options.map(o => o.text), exp: q.explanation }));
+                });
+                qdObj.L = { codes: quiz.langs.codes, names: quiz.langs.names, data, def: quiz.lang };
+                langOptionsHtml = quiz.langs.codes.map(c => '<option value="' + c + '">' + String(quiz.langs.names[c] || c).replace(/</g, '&lt;') + '</option>').join('');
+            }
+            const qdJson = JSON.stringify(qdObj).replace(/<\//g, '<\\/').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+
+            return `<!DOCTYPE html>
+<html lang="${quiz.lang || 'en'}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>${quiz.name}</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--primary:#667eea;--primary-dark:#5568d3;--secondary:#764ba2;--success:#48bb78;--danger:#f5576c;--warning:#fbbf24;--info:#4facfe;--bg-light:#f7fafc;--bg-white:#fff;--text-dark:#1a202c;--text-light:#718096;--border:#e2e8f0}
+[data-theme="dark"]{--bg-light:#1a202c;--bg-white:#2d3748;--text-dark:#f7fafc;--text-light:#cbd5e0;--border:#4a5568}
+body{font-family:'Poppins','Noto Sans Devanagari',-apple-system,BlinkMacSystemFont,sans-serif;background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%);min-height:100vh;overflow:hidden;user-select:none;-webkit-user-select:none;transition:background .3s}
+.scrollable::-webkit-scrollbar{width:6px}
+.scrollable::-webkit-scrollbar-track{background:transparent}
+.scrollable::-webkit-scrollbar-thumb{background:var(--primary);border-radius:10px}
+.protected-content{white-space:pre-wrap;word-wrap:break-word;word-break:break-word;line-height:1.6;user-select:none}
+#shufModal{position:fixed;inset:0;background:rgba(10,5,25,.6);display:none;align-items:center;justify-content:center;z-index:10001;padding:20px}
+#shufModal.show{display:flex}
+.shuf-box{background:#1e1430;border-radius:18px;padding:26px 24px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5);font-family:'Poppins',sans-serif}
+.shuf-box h3{color:#ff6fa8;font-size:20px;font-weight:700;margin:0 0 6px}
+.shuf-box p{color:#a99cc4;font-size:13px;margin:0 0 16px}
+.shuf-opt{display:block;width:100%;text-align:left;background:#2a1f3d;border:1px solid #3b2d55;color:#fff;border-radius:12px;padding:14px 18px;font:500 15px 'Poppins',sans-serif;margin-bottom:10px;cursor:pointer;transition:all .2s}
+.shuf-opt:hover{background:#3a2a55;border-color:#ff6fa8}
+.shuf-opt.cancel{color:#f05a5a;border-color:#5a2a3a}
+#modeSelection{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;overflow-y:auto}
+.mode-container{background:#fff;border-radius:24px;padding:40px 30px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:ms .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes ms{from{opacity:0;transform:translateY(40px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+.mode-header{text-align:center;margin-bottom:32px}
+.mode-header-icon{width:70px;height:70px;margin:0 auto 16px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff;box-shadow:0 8px 24px rgba(102,126,234,.3)}
+.mode-header h2{font-size:24px;font-weight:700;color:#1a202c;margin-bottom:8px}
+.mode-header p{font-size:14px;color:#718096;font-weight:400}
+.mode-cards{display:grid;gap:16px;margin-bottom:24px}
+.mode-card{background:#f7fafc;border:2px solid #e2e8f0;border-radius:16px;padding:20px;cursor:pointer;transition:all .3s;position:relative}
+.mode-card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(102,126,234,.15);border-color:#cbd5e0}
+.mode-card.selected{border-color:#667eea;background:#fff;box-shadow:0 8px 24px rgba(102,126,234,.2);transform:translateY(-2px)}
+.mode-card-header{display:flex;align-items:center}
+.mode-icon{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-right:16px;flex-shrink:0}
+.exam-mode .mode-icon{background:linear-gradient(135deg,#f093fb 0%,#f5576c 100%);color:#fff}
+.practice-mode .mode-icon{background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%);color:#fff}
+.mode-info h3{font-size:17px;font-weight:700;color:#1a202c;margin-bottom:4px}
+.mode-info p{font-size:13px;color:#718096;line-height:1.4}
+.timer-config{margin-bottom:24px}
+.timer-config label{display:block;font-size:14px;font-weight:600;color:#1a202c;margin-bottom:10px}
+.timer-config label i{margin-right:6px;color:#667eea}
+.timer-input{width:100%;padding:14px 16px;border:2px solid #e2e8f0;border-radius:12px;font-size:15px;font-weight:500;transition:all .3s;background:#fff;font-family:'Poppins',sans-serif;color:#1a202c}
+.timer-input::placeholder{color:#a0aec0}
+.timer-input:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.1)}
+.start-btn{width:100%;padding:16px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 8px 20px rgba(102,126,234,.35)}
+.start-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 28px rgba(102,126,234,.45)}
+.start-btn:active:not(:disabled){transform:translateY(0)}
+.start-btn:disabled{opacity:.5;cursor:not-allowed;background:#cbd5e0;box-shadow:none}
+#quizContainer{display:none;position:fixed;top:0;left:0;width:100%;height:100vh;background:var(--bg-light);overflow:hidden}
+
+/* MODIFIED HEADER SIZES FOR COMPACTNESS */
+.quiz-header{position:fixed;top:0;left:0;right:0;background:var(--bg-white);box-shadow:0 2px 15px rgba(0,0,0,.08);z-index:100;padding:8px 12px}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:10px}
+.quiz-title{font-size:14px;font-weight:700;color:var(--text-dark);display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.quiz-title-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
+.mode-badge{font-size:9px;padding:3px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.mode-badge.exam{background:linear-gradient(135deg,#f093fb 0%,#f5576c 100%);color:#fff}
+.mode-badge.practice{background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%);color:#fff}
+.header-actions{display:flex;gap:8px;align-items:center}
+.theme-toggle{width:32px;height:32px;background:var(--bg-light);border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text-dark);transition:all .3s}
+.theme-toggle:hover{transform:scale(1.1)}
+.timer-display{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:var(--primary);padding:5px 10px;background:linear-gradient(135deg,rgba(102,126,234,.15) 0%,rgba(118,75,162,.15) 100%);border-radius:12px;white-space:nowrap}
+.timer-display.warning{color:var(--danger);background:linear-gradient(135deg,rgba(245,87,108,.15) 0%,rgba(240,147,251,.15) 100%);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+.header-progress{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-light);margin-bottom:4px}
+.progress-bar-container{height:6px;background:var(--border);border-radius:10px;overflow:hidden}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary) 0%,var(--secondary) 100%);transition:width .3s;border-radius:10px}
+
+/* ADJUSTED FOR SMALLER HEADER & NAV FOOTER */
+.question-section{position:fixed;top:105px;left:0;right:0;bottom:70px;overflow-y:auto;overflow-x:hidden;padding:15px;-webkit-overflow-scrolling:touch}
+.question-section.scrollable{scrollbar-width:thin;scrollbar-color:var(--primary) transparent}
+
+/* MODIFIED FONT SIZES FOR QUESTIONS/OPTIONS */
+.question-card{background:var(--bg-white);border-radius:20px;padding:20px;box-shadow:0 4px 20px rgba(0,0,0,.06);max-width:800px;margin:0 auto}
+.question-number{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--primary);background:linear-gradient(135deg,rgba(102,126,234,.15) 0%,rgba(118,75,162,.15) 100%);padding:5px 10px;border-radius:20px;margin-bottom:12px}
+.question-reference{background:linear-gradient(135deg,rgba(79,172,254,.15) 0%,rgba(0,242,254,.15) 100%);border-left:4px solid var(--info);padding:10px 12px;border-radius:10px;margin-bottom:12px;font-size:12px;color:var(--text-dark);line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
+.question-text{font-size:14px;font-weight:600;color:var(--text-dark);line-height:1.6;margin-bottom:16px;white-space:pre-wrap;word-wrap:break-word;word-break:break-word}
+.options-container{display:grid;gap:10px}
+.option-btn{width:100%;padding:12px 15px;background:var(--bg-light);border:2px solid var(--border);border-radius:12px;text-align:left;font-size:13px;color:var(--text-dark);cursor:pointer;transition:all .3s;display:flex;align-items:flex-start;gap:10px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word;word-break:break-word;user-select:none}
+.option-btn:active{transform:scale(.98)}
+.option-indicator{min-width:24px;height:24px;border-radius:50%;background:var(--bg-white);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;transition:all .3s}
+.option-text{flex:1;padding-top:2px}
+.option-btn:hover:not(.disabled){border-color:var(--primary);transform:translateX(4px)}
+.option-btn.selected{background:linear-gradient(135deg,rgba(102,126,234,.15) 0%,rgba(118,75,162,.15) 100%);border-color:var(--primary)}
+.option-btn.selected .option-indicator{background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%);color:#fff;border-color:transparent}
+.option-btn.correct{background:linear-gradient(135deg,rgba(72,187,120,.15) 0%,rgba(72,187,120,.15) 100%);border-color:var(--success)}
+.option-btn.correct .option-indicator{background:var(--success);color:#fff;border-color:transparent}
+.option-btn.incorrect{background:linear-gradient(135deg,rgba(245,87,108,.15) 0%,rgba(245,87,108,.15) 100%);border-color:var(--danger)}
+.option-btn.incorrect .option-indicator{background:var(--danger);color:#fff;border-color:transparent}
+.option-btn.disabled{pointer-events:none;opacity:.6}
+.explanation-box{display:none;background:linear-gradient(135deg,rgba(254,245,231,.5) 0%,rgba(251,191,36,.2) 100%);border-left:4px solid var(--warning);border-radius:12px;padding:12px;margin-top:16px;animation:sd .3s ease-out}
+@keyframes sd{from{opacity:0;max-height:0;padding:0}to{opacity:1;max-height:500px;padding:12px}}
+.explanation-header{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#92400e;margin-bottom:8px}
+.explanation-text{font-size:12px;color:#78350f;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
+[data-theme="dark"] .explanation-text{color:#fbbf24}
+.explanation-mode-control{display:flex;align-items:center;gap:5px;padding:4px 7px;border-radius:9px;background:var(--bg-light);border:1px solid var(--border);color:var(--text-light);font-size:10px;white-space:nowrap}
+.explanation-mode-control select{max-width:105px;border:1px solid var(--border);border-radius:6px;padding:5px 6px;background:var(--bg-white);color:var(--text-dark);font:600 11px 'Poppins',sans-serif;outline:none}
+.notes-panel{margin-top:16px;padding:14px;border:1px solid #d9dff2;border-radius:14px;background:#fffdf7;color:#222;box-shadow:0 3px 12px rgba(25,40,80,.08);user-select:text}
+.notes-banner{display:flex;align-items:center;gap:9px;padding:10px 12px;margin-bottom:12px;border-radius:10px;background:linear-gradient(135deg,#e8eef7,#f0e8f7);border:1px solid #b8c5e3;color:#243d70}
+.notes-banner-icon{font-size:22px}.notes-banner-title{font-size:14px;font-weight:800}.notes-banner-sub{font-size:10px;color:#64708a;margin-top:2px}
+.notes-section{border:1px solid var(--note-border,#cbd5e1);border-radius:9px;padding:11px 12px;margin:9px 0;background:var(--note-bg,#f7f9fd)}
+.notes-section h4{font-size:11px;letter-spacing:.6px;text-transform:uppercase;margin-bottom:7px;color:var(--note-head,#254575)}
+.notes-section p,.notes-section li{font-size:12px;line-height:1.6;color:#303744;white-space:pre-wrap;overflow-wrap:anywhere}
+.notes-section ul{padding-left:18px}.notes-section li{margin:4px 0}
+.notes-section.definition{--note-border:#e4b84c;--note-bg:#fff8e1;--note-head:#805600}
+.notes-section.points{--note-border:#9db4de;--note-bg:#edf3fc;--note-head:#1a3a6b}
+.notes-section.timeline{--note-border:#8bc6c1;--note-bg:#e8f7f7;--note-head:#1a6b6b}
+.notes-section.terms{--note-border:#c8a4de;--note-bg:#f3eafa;--note-head:#5a1a8b}
+.notes-section.revision{--note-border:#9ac9a7;--note-bg:#eaf7ed;--note-head:#1a6b3a}
+.notes-empty{font-size:12px;color:#64748b;font-style:italic}
+@media(max-width:600px){.explanation-mode-control label{display:none}.explanation-mode-control select{max-width:88px}.notes-panel{padding:10px}}
+.nav-controls{position:fixed;bottom:0;left:0;right:0;background:var(--bg-white);padding:10px 16px;box-shadow:0 -2px 15px rgba(0,0,0,.08);display:flex;gap:10px;z-index:90}
+.nav-btn{flex:1;padding:12px;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:6px}
+.nav-btn.primary{background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%);color:#fff}
+.nav-btn.secondary{background:var(--bg-light);color:var(--text-dark);border:2px solid var(--border)}
+.nav-btn:active{transform:scale(.96)}
+.nav-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.question-nav-toggle{position:fixed;bottom:85px;right:20px;width:48px;height:48px;background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%);color:#fff;border:none;border-radius:50%;font-size:18px;cursor:pointer;box-shadow:0 8px 20px rgba(102,126,234,.4);z-index:85;transition:all .3s}
+.question-nav-toggle:active{transform:scale(.95)}
+.question-nav-panel{position:fixed;bottom:0;left:0;right:0;background:var(--bg-white);border-radius:24px 24px 0 0;box-shadow:0 -4px 30px rgba(0,0,0,.15);z-index:95;max-height:70vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s;padding:20px}
+.question-nav-panel.open{transform:translateY(0)}
+.nav-panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--border)}
+.nav-panel-title{font-size:16px;font-weight:700;color:var(--text-dark)}
+.nav-close-btn{width:32px;height:32px;background:var(--bg-light);border:none;border-radius:50%;font-size:16px;cursor:pointer;color:var(--text-light)}
+.nav-legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px;font-size:11px;color:var(--text-dark)}
+.legend-item{display:flex;align-items:center;gap:6px;color:var(--text-dark)}
+.legend-box{width:16px;height:16px;border-radius:4px}
+.legend-box.answered{background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%)}
+.legend-box.marked{background:linear-gradient(135deg,var(--warning) 0%,#f59e0b 100%)}
+.legend-box.unanswered{background:var(--border)}
+.question-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.question-nav-item{aspect-ratio:1;border:2px solid var(--border);border-radius:8px;background:var(--bg-white);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;cursor:pointer;transition:all .3s;color:var(--text-light)}
+.question-nav-item:active{transform:scale(.95)}
+.question-nav-item.current{border-color:var(--primary);background:linear-gradient(135deg,rgba(102,126,234,.15) 0%,rgba(118,75,162,.15) 100%);color:var(--primary)}
+.question-nav-item.answered{background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%);color:#fff;border-color:transparent}
+.question-nav-item.marked{background:linear-gradient(135deg,var(--warning) 0%,#f59e0b 100%);color:#fff;border-color:transparent}
+.question-nav-item.correct{background:linear-gradient(135deg,var(--success) 0%,#38a169 100%);color:#fff;border-color:transparent}
+.question-nav-item.incorrect{background:linear-gradient(135deg,var(--danger) 0%,#e53e3e 100%);color:#fff;border-color:transparent}
+#resultsContainer{display:none;position:fixed;top:0;left:0;width:100%;height:100vh;background:var(--bg-light);overflow-y:auto;overflow-x:hidden;padding:20px;z-index:1000}
+#resultsContainer.scrollable{scrollbar-width:thin;scrollbar-color:var(--primary) transparent}
+.results-header{text-align:center;padding:40px 20px;background:var(--bg-white);border-radius:20px;margin-bottom:20px;box-shadow:0 4px 20px rgba(0,0,0,.06)}
+.results-icon{font-size:60px;margin-bottom:15px}
+.results-title{font-size:22px;font-weight:700;color:var(--text-dark);margin-bottom:8px}
+.results-score{font-size:44px;font-weight:800;background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+.results-percentage{font-size:18px;color:var(--text-light);font-weight:600}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;max-width:800px;margin-left:auto;margin-right:auto}
+.stat-card{background:var(--bg-white);padding:18px;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,.06)}
+.stat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px}
+.stat-icon.correct{background:linear-gradient(135deg,var(--success) 0%,#38a169 100%);color:#fff}
+.stat-icon.incorrect{background:linear-gradient(135deg,var(--danger) 0%,#e53e3e 100%);color:#fff}
+.stat-icon.unattempted{background:linear-gradient(135deg,#a0aec0 0%,#718096 100%);color:#fff}
+.stat-icon.negative{background:linear-gradient(135deg,#ed8936 0%,#dd6b20 100%);color:#fff}
+.stat-value{font-size:26px;font-weight:700;color:var(--text-dark);margin-bottom:2px}
+.stat-label{font-size:12px;color:var(--text-light);font-weight:500}
+.action-buttons{display:grid;gap:10px;max-width:800px;margin:0 auto}
+.action-btn{width:100%;padding:14px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .3s}
+.action-btn.primary{background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%);color:#fff}
+.action-btn.secondary{background:var(--bg-white);color:var(--text-dark);border:2px solid var(--border)}
+.action-btn:hover{transform:translateY(-2px)}
+
+@media (min-width: 1024px) {
+    body { overflow: auto !important; }
+    #quizContainer {
+        display: grid !important;
+        grid-template-columns: 1fr 320px;
+        grid-template-rows: auto 1fr auto;
+        gap: 0;
+        height: 100vh;
+        overflow: hidden;
+    }
+    .quiz-header {
+        grid-column: 1 / -1;
+        position: static;
+        padding: 12px 20px;
+        border-bottom: 3px solid var(--border);
+    }
+    .header-top {
+        max-width: none;
+        margin-bottom: 10px;
+    }
+    .quiz-title-text { max-width: 400px; }
+    .timer-display {
+        padding: 6px 12px;
+        font-size: 15px;
+    }
+    .question-section {
+        position: static !important;
+        grid-column: 1;
+        grid-row: 2;
+        overflow-y: auto;
+        padding: 24px;
+        background: var(--bg-light);
+        top: auto !important;
+        bottom: auto !important;
+    }
+    .question-card {
+        max-width: 900px;
+        padding: 24px;
+        margin: 0 auto 20px;
+    }
+    .question-text {
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+    .option-btn {
+        padding: 14px 18px;
+        font-size: 14px;
+    }
+    .option-indicator {
+        min-width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+    .question-nav-panel {
+        position: static !important;
+        grid-column: 2;
+        grid-row: 2;
+        transform: none !important;
+        max-height: none;
+        height: 100%;
+        border-radius: 0;
+        border-left: 3px solid var(--border);
+        box-shadow: none;
+        padding: 24px;
+        overflow-y: auto;
+        background: var(--bg-white);
+    }
+    .question-nav-panel.open { transform: none !important; }
+    .nav-panel-header {
+        position: sticky;
+        top: 0;
+        background: var(--bg-white);
+        z-index: 10;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+    }
+    .nav-panel-title {
+        font-size: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .nav-close-btn { display: none; }
+    .nav-legend {
+        position: sticky;
+        top: 60px;
+        background: var(--bg-white);
+        z-index: 9;
+        padding: 16px;
+        margin: -16px -16px 20px;
+        border-radius: 12px;
+        background: var(--bg-light);
+    }
+    .question-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+    .question-nav-item {
+        aspect-ratio: 1;
+        font-size: 14px;
+        border-radius: 10px;
+    }
+    .question-nav-toggle { display: none; }
+    .nav-controls {
+        position: static;
+        grid-column: 1;
+        grid-row: 3;
+        padding: 12px 20px;
+        border-top: 3px solid var(--border);
+        max-width: none;
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+    }
+    .nav-btn {
+        min-width: 140px;
+        padding: 14px 20px;
+        font-size: 14px;
+    }
+    #resultsContainer {
+        padding: 40px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    .results-header {
+        padding: 50px 30px;
+        margin-bottom: 24px;
+    }
+    .results-icon { font-size: 80px; }
+    .results-title { font-size: 30px; }
+    .results-score { font-size: 56px; }
+    .results-percentage { font-size: 20px; }
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+        max-width: none;
+    }
+    .stat-card { padding: 24px; }
+    .stat-icon { width: 48px; height: 48px; font-size: 20px; }
+    .stat-value { font-size: 32px; }
+    .stat-label { font-size: 13px; }
+    .action-buttons {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        max-width: 800px;
+    }
+    .action-btn { padding: 16px; font-size: 15px; }
+    .mode-container {
+        max-width: 600px;
+        padding: 40px 30px;
+    }
+    .mode-header-icon {
+        width: 76px;
+        height: 76px;
+        font-size: 36px;
+    }
+    .mode-header h2 { font-size: 26px; }
+    .mode-header p { font-size: 14px; }
+    .mode-cards { gap: 16px; }
+    .mode-card {
+        padding: 20px;
+        border-radius: 16px;
+    }
+    .mode-icon {
+        width: 54px;
+        height: 54px;
+        font-size: 24px;
+        margin-right: 16px;
+    }
+    .mode-info h3 { font-size: 17px; }
+    .mode-info p { font-size: 13px; }
+    .timer-input { padding: 14px 16px; font-size: 15px; }
+    .start-btn { padding: 16px; font-size: 16px; }
+}
+
+@media (min-width: 1440px) {
+    #quizContainer {
+        grid-template-columns: 1fr 380px;
+    }
+    .question-section { padding: 32px 48px; }
+    .question-card { max-width: 1000px; padding: 32px; }
+    .question-nav-panel { padding: 32px; }
+    .question-grid { grid-template-columns: repeat(5, 1fr); }
+    .nav-controls { padding: 16px 48px; }
+}
+
+/* Mobile: scrollable bottom bar, Next/Submit at 3rd place */
+@media (max-width: 1023px) {
+    #quizContainer{height:100dvh}
+    .question-section{bottom:calc(72px + env(safe-area-inset-bottom))}
+    .nav-controls{overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;padding-bottom:calc(10px + env(safe-area-inset-bottom));scrollbar-width:thin}
+    .nav-controls .nav-btn{flex:0 0 auto;min-width:92px;white-space:nowrap;scroll-snap-align:start}
+    #pv{order:1} #mk{order:2} #nx,#sm{order:3} #ll-5050{order:4} #ll-poll{order:5} #ll-double{order:6}
+    .nav-controls > :not(.nav-btn){order:7}
+}
+</style>
+</head>
+<body class="theme-anime">
+<div id="shufModal"><div class="shuf-box"><h3><i class="fas fa-random"></i> Shuffle Options</h3><p>How would you like to shuffle for this quiz?</p>
+<button class="shuf-opt" onclick="pickShuf(0)">No Shuffle - Keep original order</button>
+<button class="shuf-opt" onclick="pickShuf(1)">Shuffle Questions only</button>
+<button class="shuf-opt" onclick="pickShuf(2)">Shuffle Options only</button>
+<button class="shuf-opt" onclick="pickShuf(3)">Shuffle Both Questions and Options</button>
+<button class="shuf-opt cancel" onclick="pickShuf(-1)">Cancel</button></div></div>
+<div id="modeSelection">
+<div class="mode-container">
+<div class="mode-header">
+<div class="mode-header-icon"><i class="fas fa-graduation-cap"></i></div>
+<h2>${quizNameEscaped}</h2>
+<p>Choose your preferred test mode</p>
+</div>
+<div class="mode-cards">
+<div class="mode-card exam-mode" data-mode="exam">
+<div class="mode-card-header">
+<div class="mode-icon"><i class="fas fa-file-alt"></i></div>
+<div class="mode-info">
+<h3>Exam Mode</h3>
+<p>Complete all questions, results shown after submission</p>
+</div>
+</div>
+</div>
+<div class="mode-card practice-mode" data-mode="practice">
+<div class="mode-card-header">
+<div class="mode-icon"><i class="fas fa-book-open"></i></div>
+<div class="mode-info">
+<h3>Practice Mode</h3>
+<p>Instant feedback with detailed explanations</p>
+</div>
+</div>
+</div>
+</div>
+<div class="timer-config">
+<label for="ct"><i class="fas fa-clock"></i> Custom Timer (minutes)</label>
+<input type="number" id="ct" class="timer-input" placeholder="Default: \${Math.round(qd.tt / 60)} minutes" min="1" max="300"/>
+</div>
+${langOptionsHtml ? '<div class="timer-config lang-config"><label for="langSwitchStart"><i class="fas fa-language"></i> Quiz Language</label><select id="langSwitchStart" class="timer-input" onchange="applyLang(this.value)">' + langOptionsHtml + '</select></div>' : ''}
+<button class="start-btn" id="sb" disabled><i class="fas fa-play-circle"></i><span>Start Quiz</span></button>
+</div>
+</div>
+<div id="quizContainer">
+<div class="quiz-header">
+<div class="header-top">
+<div class="quiz-title">
+<i class="fas fa-clipboard-list"></i>
+<span class="quiz-title-text" title="${quizNameEscaped}">${quizNameEscaped}</span>
+<span class="mode-badge" id="mb"></span>
+</div>
+<div class="header-actions">
+${langOptionsHtml ? '<div class="explanation-mode-control" title="Switch quiz language"><label for="langSwitch"><i class="fas fa-language"></i></label><select id="langSwitch" onchange="applyLang(this.value)">' + langOptionsHtml + '</select></div>' : ''}
+<div class="explanation-mode-control" title="Choose how explanations appear under each question"><label for="explanationMode">Explanation</label><select id="explanationMode" onchange="setExplanationMode(this.value)"><option value="plain">Plain</option><option value="notes">Study Notes</option></select></div>
+<!-- Standalone TTS Controls -->
+<div style="display: flex; gap: 8px; font-size: 11px; align-items: center; color: var(--text-light); margin-right: 10px;">
+    <label style="display: flex; align-items: center; gap: 3px; cursor: pointer; user-select: none;">
+        <input type="checkbox" id="tts-read-q-p" style="accent-color: var(--primary);"> Q
+    </label>
+    <label style="display: flex; align-items: center; gap: 3px; cursor: pointer; user-select: none;">
+        <input type="checkbox" id="tts-read-exp-p" style="accent-color: var(--primary);"> Exp
+    </label>
+</div>
+<button class="theme-toggle" id="tt" title="Toggle Dark Mode"><i class="fas fa-moon"></i></button>
+<div class="timer-display" id="td"><i class="fas fa-clock"></i><span id="tt2">00:00</span></div>
+</div>
+</div>
+<div class="header-progress">
+<span id="pt">Question 1 of 100</span>
+<span id="at">Attempted: 0/100</span>
+</div>
+<div class="progress-bar-container"><div class="progress-bar" id="pb"></div></div>
+</div>
+<div class="question-section scrollable" id="qs"></div>
+<div class="nav-controls">
+<button class="nav-btn secondary" id="pv"><i class="fas fa-chevron-left"></i>Previous</button>
+<button class="nav-btn secondary" id="mk"><i class="fas fa-bookmark"></i>Mark</button>
+<!-- Lifelines Buttons -->
+<button class="nav-btn secondary" id="ll-5050" onclick="useLifeline('5050')" style="background: rgba(102,126,234,0.1); color: var(--primary); border-color: rgba(102,126,234,0.2);">🌓 50:50</button>
+<button class="nav-btn secondary" id="ll-poll" onclick="useLifeline('poll')" style="background: rgba(72,187,120,0.1); color: var(--success); border-color: rgba(72,187,120,0.2);">📊 Poll</button>
+<button class="nav-btn secondary" id="ll-double" onclick="useLifeline('double')" style="background: rgba(251,191,36,0.1); color: var(--warning); border-color: rgba(251,191,36,0.2);">2️⃣ Double</button>
+<button class="nav-btn primary" id="nx">Next<i class="fas fa-chevron-right"></i></button>
+<button class="nav-btn primary" id="sm" style="display:none"><i class="fas fa-paper-plane"></i>Submit</button>
+</div>
+<button class="question-nav-toggle" id="nt"><i class="fas fa-th"></i></button>
+<div class="question-nav-panel" id="np">
+<div class="nav-panel-header">
+<h3 class="nav-panel-title"><i class="fas fa-map-marked-alt"></i> Question Navigator</h3>
+<button class="nav-close-btn" id="nc"><i class="fas fa-times"></i></button>
+</div>
+<div class="nav-legend">
+<div class="legend-item"><div class="legend-box answered"></div><span>Answered</span></div>
+<div class="legend-item"><div class="legend-box marked"></div><span>Marked</span></div>
+<div class="legend-item"><div class="legend-box unanswered"></div><span>Not Answered</span></div>
+</div>
+<div class="question-grid" id="qg"></div>
+</div>
+</div>
+<div id="resultsContainer">
+<div class="results-header">
+<div class="results-icon" id="ri"></div>
+<h2 class="results-title" id="rt"></h2>
+<div class="results-score" id="rs"></div>
+<div class="results-percentage" id="rp"></div>
+</div>
+<div class="stats-grid">
+<div class="stat-card"><div class="stat-icon correct"><i class="fas fa-check"></i></div><div class="stat-value" id="cc">0</div><div class="stat-label">Correct</div></div>
+<div class="stat-card"><div class="stat-icon incorrect"><i class="fas fa-times"></i></div><div class="stat-value" id="ic">0</div><div class="stat-label">Incorrect</div></div>
+<div class="stat-card"><div class="stat-icon unattempted"><i class="fas fa-minus"></i></div><div class="stat-value" id="uc">0</div><div class="stat-label">Unattempted</div></div>
+<div class="stat-card"><div class="stat-icon negative"><i class="fas fa-exclamation-triangle"></i></div><div class="stat-value" id="nm">0</div><div class="stat-label">Negative Marks</div></div>
+</div>
+<div class="action-buttons">
+<button class="action-btn primary" id="rb"><i class="fas fa-search"></i>Review Answers</button>
+<button class="action-btn secondary" id="rsb"><i class="fas fa-redo"></i>Restart Quiz</button>
+</div>
+</div>
+
+<!-- Standalone Audience Poll Modal -->
+<div id="pollModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(3px); z-index:99999; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:var(--bg-white); border-radius:20px; padding:30px; max-width:400px; width:100%; box-shadow:0 10px 30px rgba(0,0,0,0.2); color:var(--text-dark);">
+        <h3 style="text-align: center; color: var(--primary); margin-bottom: 15px;"><i class="fas fa-chart-bar"></i> Audience Poll</h3>
+        <div id="pollBarsContainer" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;"></div>
+        <button class="nav-btn primary" onclick="document.getElementById('pollModal').style.display='none'" style="width:100%;">Close</button>
+    </div>
+</div>
+
+<script>
+const qd=${qdJson};
+let explanationMode='plain';
+function setExplanationMode(mode){explanationMode=mode==='notes'?'notes':'plain';const sel=document.getElementById('explanationMode');if(sel&&sel.value!==explanationMode)sel.value=explanationMode;if(typeof st!=='undefined'&&st&&typeof st.cq==='number'&&document.getElementById('qs'))rq(st.cq);}
+function noteEscape(value){return String(value==null?'':value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\\"/g,'&quot;').replace(/'/g,'&#39;');}
+function buildStudyNotes(raw){
+ const text=String(raw||'').replace(/^\\s*Ex\\s*:\\s*/i,'').trim();
+ if(!text)return '<div class="notes-panel"><div class="notes-empty">No explanation was provided for this question.</div></div>';
+ const sentences=text.split(/\\n+|(?<=[.!?])\\s+(?=[A-Z0-9])/).map(x=>x.trim()).filter(Boolean);
+ const defs=sentences.filter(x=>/\\b(is defined as|means that|refers to|is known as|can be defined as|denotes)\\b/i.test(x));
+ const years=[];const yearRx=/\\b(?:1[6-9]\\d{2}|20[0-3]\\d)\\b/g;let match;while((match=yearRx.exec(text))!==null){if(!years.some(y=>y.year===match[0])){const start=Math.max(0,match.index-65),end=Math.min(text.length,match.index+105);years.push({year:match[0],detail:text.slice(start,end).trim()});}}
+ const termSet=[];const termRx=/\\b(?:Article\\s+\\d+[A-Za-z]?|[A-Z]{2,}(?:\\s+[A-Z]{2,}){0,2})\\b/g;while((match=termRx.exec(text))!==null){const term=match[0].trim();if(term.length>2&&!/^(THE|AND|FOR|NOT|BUT|EX|INDIA)$/i.test(term)&&!termSet.includes(term))termSet.push(term);}
+ const esc=noteEscape;let html='<div class="notes-panel"><div class="notes-banner"><span class="notes-banner-icon">📚</span><div><div class="notes-banner-title">Structured Study Notes</div><div class="notes-banner-sub">Explanation organised for quick revision</div></div></div>';
+ if(defs.length)html+='<section class="notes-section definition"><h4>📖 Definition / Core Idea</h4>'+defs.map(x=>'<p>'+esc(x)+'</p>').join('')+'</section>';
+ const key=sentences.filter(x=>defs.indexOf(x)===-1&&!/^(Hence|Therefore|Thus|In conclusion)\\b/i.test(x));
+ if(key.length)html+='<section class="notes-section points"><h4>📌 Key Points</h4><ul>'+key.slice(0,12).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></section>';
+ if(years.length)html+='<section class="notes-section timeline"><h4>🗓️ Important Years / Dates</h4><ul>'+years.slice(0,8).map(y=>'<li><b>'+esc(y.year)+'</b> — '+esc(y.detail)+'</li>').join('')+'</ul></section>';
+ if(termSet.length)html+='<section class="notes-section terms"><h4>🔑 Key Terms</h4><p>'+termSet.slice(0,10).map(esc).join(' · ')+'</p></section>';
+ const revision=sentences.slice(0,5);if(revision.length)html+='<section class="notes-section revision"><h4>☑️ Quick Revision Checklist</h4><ul>'+revision.map(x=>'<li>☐ '+esc(x)+'</li>').join('')+'</ul></section>';
+ html+='<details class="notes-section"><summary style="cursor:pointer;font-size:11px;font-weight:700;color:#475569">View original explanation</summary><p style="margin-top:8px">'+esc(text)+'</p></details></div>';return html;
+}
+st={cq:0,a:Array(qd.q.length).fill(null),mk:Array(qd.q.length).fill(false),tr:qd.tt,ti:null,sb:false,rv:false,th:'light'};
+
+const VoiceEngine = {
+    enabledQ: false,
+    enabledExp: false,
+    selectedVoice: null,
+    init() {
+        const qCheck = document.getElementById('tts-read-q-p');
+        const expCheck = document.getElementById('tts-read-exp-p');
+        if (qCheck) {
+            this.enabledQ = localStorage.getItem('tts_read_q') === 'true';
+            qCheck.checked = this.enabledQ;
+            qCheck.addEventListener('change', (e) => {
+                this.enabledQ = e.target.checked;
+                localStorage.setItem('tts_read_q', this.enabledQ);
+                if (this.enabledQ) this.speak("Voice enabled");
+                else window.speechSynthesis.cancel();
+            });
+        }
+        if (expCheck) {
+            this.enabledExp = localStorage.getItem('tts_read_exp') === 'true';
+            expCheck.checked = this.enabledExp;
+            expCheck.addEventListener('change', (e) => {
+                this.enabledExp = e.target.checked;
+                localStorage.setItem('tts_read_exp', this.enabledExp);
+                if (this.enabledExp) this.speak("Explanation enabled");
+                else window.speechSynthesis.cancel();
+            });
+        }
+        this.selectVoice();
+        if (typeof window !== 'undefined' && window.speechSynthesis) {
+            window.speechSynthesis.onvoiceschanged = () => this.selectVoice();
+        }
+    },
+    selectVoice() {
+        if (typeof window === 'undefined' || !window.speechSynthesis) return;
+        const voices = window.speechSynthesis.getVoices() || [];
+        const pick = (lists) => {
+            for (const test of lists) { const v = voices.find(test); if (v) return v; }
+            return null;
+        };
+        const nm = v => (v.name || '').toLowerCase();
+        const lg = v => (v.lang || '').toLowerCase().replace('_', '-');
+        // English: Microsoft Ravi (en-IN, offline on Windows) first, then other offline Indian/English voices
+        this.enVoice = pick([
+            v => nm(v).includes('microsoft ravi'),
+            v => nm(v).includes('microsoft heera'),
+            v => lg(v) === 'en-in' && v.localService,
+            v => lg(v).startsWith('en') && v.localService && /zira|david|mark|hazel|samantha|daniel/.test(nm(v)),
+            v => lg(v).startsWith('en') && v.localService,
+            v => lg(v) === 'en-in',
+            v => lg(v).startsWith('en')
+        ]);
+        // Hindi: Microsoft Hemant / Kalpana (hi-IN, offline on Windows) first, then any offline Hindi voice
+        this.hiVoice = pick([
+            v => nm(v).includes('microsoft hemant'),
+            v => nm(v).includes('microsoft kalpana'),
+            v => lg(v).startsWith('hi') && v.localService,
+            v => lg(v).startsWith('hi') && /lekha|google/.test(nm(v)),
+            v => lg(v).startsWith('hi')
+        ]);
+        this.voices = voices;
+        this.selectedVoice = this.enVoice || this.hiVoice || voices[0] || null;
+    },
+    voiceFor(text) {
+        const isHindi = /[\\u0900-\\u097F]/.test(text) || (qd.lang === 'hi');
+        if (isHindi) return { voice: this.hiVoice, lang: 'hi-IN', hi: true };
+        const code = qd.lang || document.documentElement.lang || 'en';
+        if (code !== 'en' && this.voices) {
+            const v = this.voices.find(x => (x.lang || '').toLowerCase().startsWith(code) && x.localService) || this.voices.find(x => (x.lang || '').toLowerCase().startsWith(code));
+            if (v) return { voice: v, lang: v.lang, hi: false };
+        }
+        return { voice: this.enVoice, lang: (this.enVoice && this.enVoice.lang) || 'en-IN', hi: false };
+    },
+    speak(text) {
+        if (typeof window === 'undefined' || !window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+        if (!text) return;
+        if (!this.enVoice && !this.hiVoice) this.selectVoice();
+        const cleanText = String(text).replace(/<[^>]*>/g, " ").trim();
+        if (!cleanText) return;
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        const vf = this.voiceFor(cleanText);
+        if (vf.voice) utterance.voice = vf.voice;
+        utterance.lang = vf.lang;
+        utterance.rate = 1;
+        window.speechSynthesis.speak(utterance);
+    },
+    speakQuestion(qObj) {
+        if (!this.enabledQ) return;
+        const hiQ = /[\u0900-\u097F]/.test(qObj.txt) || qd.lang === 'hi';
+        let str = qObj.txt + ". ";
+        if (qObj.opts) {
+            qObj.opts.forEach((o, i) => {
+                str += (hiQ ? "विकल्प " : "Option ") + String.fromCharCode(65 + i) + ": " + o + ". ";
+            });
+        }
+        this.speak(str);
+    },
+    speakExplanation(exp) {
+        if (!this.enabledExp) return;
+        const hiE = /[\u0900-\u097F]/.test(exp || '') || qd.lang === 'hi';
+        this.speak((hiE ? "व्याख्या: " : "Explanation: ") + String(exp || '').replace(/^\\s*Ex\\s*:\\s*/i, ''));
+    }
+};
+
+const Lifelines = {
+    used5050: false,
+    usedPoll: false,
+    usedDouble: false,
+    doubleDipActive: false,
+    init() {
+        this.used5050 = false;
+        this.usedPoll = false;
+        this.usedDouble = false;
+        this.doubleDipActive = false;
+        const btn1 = document.getElementById('ll-5050');
+        const btn2 = document.getElementById('ll-poll');
+        const btn3 = document.getElementById('ll-double');
+        if (btn1) btn1.disabled = false;
+        if (btn2) btn2.disabled = false;
+        if (btn3) btn3.disabled = false;
+    }
+};
+
+function useLifeline(type) {
+    const q = qd.q[st.cq];
+    if (type === '5050') {
+        if (Lifelines.used5050) return;
+        Lifelines.used5050 = true;
+        document.getElementById('ll-5050').disabled = true;
+        
+        const incorrect = [];
+        q.opts.forEach((_, i) => {
+            if (i !== q.ci) incorrect.push(i);
+        });
+        
+        const toHide = [];
+        while (toHide.length < 2 && incorrect.length > 0) {
+            toHide.push(incorrect.splice(Math.floor(Math.random() * incorrect.length), 1)[0]);
+        }
+        
+        const btns = document.querySelectorAll('.option-btn');
+        toHide.forEach(idx => {
+            if (btns[idx]) {
+                btns[idx].style.opacity = '0';
+                btns[idx].style.pointerEvents = 'none';
+            }
+        });
+    } 
+    else if (type === 'poll') {
+        if (Lifelines.usedPoll) return;
+        Lifelines.usedPoll = true;
+        document.getElementById('ll-poll').disabled = true;
+        
+        let correctPct = Math.floor(Math.random() * 25) + 50;
+        let remaining = 100 - correctPct;
+        
+        const optPcts = [0, 0, 0, 0];
+        optPcts[q.ci] = correctPct;
+        
+        const other = [0, 1, 2, 3].filter(i => i !== q.ci);
+        const p1 = Math.floor(Math.random() * (remaining - 5));
+        remaining -= p1;
+        const p2 = Math.floor(Math.random() * remaining);
+        const p3 = remaining - p2;
+        optPcts[other[0]] = p1;
+        optPcts[other[1]] = p2;
+        optPcts[other[2]] = p3;
+        
+        const container = document.getElementById('pollBarsContainer');
+        container.innerHTML = '';
+        
+        q.opts.forEach((opt, idx) => {
+            const pct = optPcts[idx];
+            const label = String.fromCharCode(65 + idx);
+            const barWrap = document.createElement('div');
+            barWrap.style.marginBottom = '10px';
+            barWrap.innerHTML = \`
+                <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:600; margin-bottom:4px;">
+                    <span>Option \${label}: \${opt.slice(0, 25)}</span>
+                    <span>\${pct}%</span>
+                </div>
+                <div style="height:10px; background:rgba(0,0,0,0.05); border-radius:5px; overflow:hidden;">
+                    <div class="poll-fill-\${idx}" style="height:100%; border-radius:5px; width:0%; background:\${idx === q.ci ? 'var(--success)' : 'var(--primary)'}; transition: width 1s ease;"></div>
+                </div>
+            \`;
+            container.appendChild(barWrap);
+            setTimeout(() => {
+                const fillEl = container.querySelector('.poll-fill-' + idx);
+                if (fillEl) fillEl.style.width = pct + '%';
+            }, 100);
+        });
+        
+        document.getElementById('pollModal').style.display = 'flex';
+    } 
+    else if (type === 'double') {
+        if (Lifelines.usedDouble) return;
+        Lifelines.usedDouble = true;
+        Lifelines.doubleDipActive = true;
+        document.getElementById('ll-double').disabled = true;
+        alert("Double Dip Lifeline Active! You can now guess twice for this question.");
+    }
+}
+
+document.addEventListener('DOMContentLoaded',()=>{sms();pcc();lt()});
+function lt(){const t=localStorage.getItem('qt')||'light';st.th=t;document.documentElement.setAttribute('data-theme',t);uti()}
+function tgt(){st.th=st.th==='light'?'dark':'light';document.documentElement.setAttribute('data-theme',st.th);localStorage.setItem('qt',st.th);uti()}
+function uti(){const i=document.querySelector('#tt i');if(i)i.className=st.th==='light'?'fas fa-moon':'fas fa-sun'}
+function pcc(){document.addEventListener('contextmenu',e=>e.preventDefault());document.addEventListener('copy',e=>e.preventDefault());document.addEventListener('cut',e=>e.preventDefault());document.addEventListener('selectstart',e=>{if(!e.target.tagName.match(/INPUT|TEXTAREA/i))e.preventDefault()})}
+function sms(){const mc=document.querySelectorAll('.mode-card'),sb=document.getElementById('sb');mc.forEach(c=>{c.addEventListener('click',()=>{mc.forEach(x=>x.classList.remove('selected'));c.classList.add('selected');qd.m=c.dataset.mode;sb.disabled=false})});sb.addEventListener('click',sq)}
+function sq(){document.getElementById('shufModal').classList.add('show')}
+function rndPerm(n){const a=[];for(let i=0;i<n;i++)a.push(i);for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t}return a}
+function pickShuf(t){document.getElementById('shufModal').classList.remove('show');if(t<0)return;if(t>0&&!qd.shufDone){qd.shufDone=true;const n=qd.q.length;const qp=(t===1||t===3)?(qd.sec?secPerm(n):rndPerm(n)):rndPerm(0).concat(Array.from({length:n},(_,i)=>i));const ops=qp.map(function(oi){const len=qd.q[oi].opts.length;return(t===2||t===3)?rndPerm(len):Array.from({length:len},(_,i)=>i)});qd.q=qp.map(function(oi,k){const q=qd.q[oi],op=ops[k];q.opts=op.map(function(x){return q.opts[x]});q.ci=op.indexOf(q.ci);return q});if(qd.L&&qd.L.data){Object.keys(qd.L.data).forEach(function(c){const d=qd.L.data[c];qd.L.data[c]=qp.map(function(oi,k){const e=d[oi];if(!e)return e;const r=Object.assign({},e);if(Array.isArray(e.opts))r.opts=ops[k].map(function(x){return e.opts[x]});return r})})}st.a=Array(n).fill(null);st.mk=Array(n).fill(false)}realSq()}
+function realSq(){const ct=document.getElementById('ct'),ctv=parseInt(ct.value);if(ctv&&ctv>0){st.tr=ctv*60;qd.tt=ctv*60}document.body.style.overflow='hidden';document.getElementById('modeSelection').style.display='none';document.getElementById('quizContainer').style.display='block';document.getElementById('mb').textContent=qd.m;document.getElementById('mb').className='mode-badge '+qd.m;iq()}
+function iq(){Lifelines.init();VoiceEngine.init();rq(0);rqg();stt();sn()}
+function stt(){utd();st.ti=setInterval(()=>{st.tr--;utd();if(st.tr<=0){clearInterval(st.ti);sbq()}if(st.tr<=60)document.getElementById('td').classList.add('warning')},1000)}
+function utd(){const m=Math.floor(st.tr/60),s=st.tr%60;document.getElementById('tt2').textContent=\`\${String(m).padStart(2,'0')}:\${String(s).padStart(2,'0')}\`}
+function rq(i){st.cq=i;const q=qd.q[i],qs=document.getElementById('qs');let h=\`<div class="question-card"><div class="question-number"><i class="fas fa-question-circle"></i>Question \${i+1} of \${qd.q.length}</div>\`;if(qd.sec&&q.s!=null)h=h.replace('<div class="question-number">','<div class="sec-badge"><i class="fas fa-layer-group"></i> '+qd.sec[q.s]+'</div><div class="question-number">');if(q.ref)h+=\`<div class="question-reference protected-content"><i class="fas fa-info-circle"></i> \${q.ref}</div>\`;h+=\`<div class="question-text protected-content">\${q.txt}</div><div class="options-container">\`;q.opts.forEach((o,x)=>{let bc='option-btn',ic=String.fromCharCode(65+x);const isSel=st.a[i]===x,isCor=x===q.ci,shAns=(qd.m==='practice'&&st.a[i]!==null)||st.sb;if(isSel)bc+=' selected';if(shAns){bc+=' disabled';if(isCor){bc+=' correct';ic='<i class=\"fas fa-check\"></i>'}else if(isSel&&!isCor){bc+=' incorrect';ic='<i class=\"fas fa-times\"></i>'}}h+=\`<button class="\${bc}" data-index="\${x}" onclick="so(\${x})"><div class="option-indicator">\${ic}</div><div class="option-text protected-content">\${o}</div></button>\`});h+=\`</div>\`;const shExp=(qd.m==='practice'&&st.a[i]!==null)||st.sb;if(shExp){if(explanationMode==='notes'){h+=buildStudyNotes(q.exp)}else{h+=\`<div class="explanation-box" style="display:block"><div class="explanation-header"><i class="fas fa-lightbulb"></i>Explanation</div><div class="explanation-text protected-content">\${q.exp}</div></div>\`}}h+=\`</div>\`;qs.innerHTML=h;qs.scrollTop=0;up();unb();uqg();if(!st.sb && VoiceEngine.enabledQ){VoiceEngine.speakQuestion(q);}}
+function so(oi){if(st.sb)return;const q=qd.q[st.cq];if(Lifelines.doubleDipActive){if(oi!==q.ci){Lifelines.doubleDipActive=false;const btn=document.querySelector('.option-btn[data-index="'+oi+'"]');if(btn){btn.classList.add('incorrect');btn.style.pointerEvents='none';btn.querySelector('.option-indicator').innerHTML='<i class="fas fa-times"></i>';}return;}else{Lifelines.doubleDipActive=false;}}if(st.a[st.cq]===oi){st.a[st.cq]=null}else{st.a[st.cq]=oi}rq(st.cq);if(qd.m==='practice' && st.a[st.cq]!==null && VoiceEngine.enabledExp){VoiceEngine.speakExplanation(q.exp);}}
+function sn(){document.getElementById('pv').addEventListener('click',np);document.getElementById('nx').addEventListener('click',nn);document.getElementById('mk').addEventListener('click',tm);document.getElementById('sm').addEventListener('click',cs);document.getElementById('nt').addEventListener('click',tnp);document.getElementById('nc').addEventListener('click',tnp);document.getElementById('rb').addEventListener('click',ra);document.getElementById('rsb').addEventListener('click',rs);document.getElementById('tt').addEventListener('click',tgt);document.addEventListener('keydown',e=>{if(st.sb)return;if(e.key==='ArrowLeft')np();if(e.key==='ArrowRight')nn()})}
+function np(){if(st.cq>0)rq(st.cq-1)}
+function nn(){if(st.cq<qd.q.length-1)rq(st.cq+1)}
+function tm(){st.mk[st.cq]=!st.mk[st.cq];uqg();const mb=document.getElementById('mk');mb.innerHTML=st.mk[st.cq]?'<i class=\"fas fa-bookmark\"></i> Unmark':'<i class=\"fas fa-bookmark\"></i> Mark'}
+function unb(){document.getElementById('pv').disabled=st.cq===0;if(st.cq===qd.q.length-1){document.getElementById('nx').style.display='none';document.getElementById('sm').style.display='flex'}else{document.getElementById('nx').style.display='flex';document.getElementById('sm').style.display='none'}const mb=document.getElementById('mk');mb.innerHTML=st.mk[st.cq]?'<i class=\"fas fa-bookmark\"></i> Unmark':'<i class=\"fas fa-bookmark\"></i> Mark'}
+function up(){const at=st.a.filter(a=>a!==null).length,pr=((st.cq+1)/qd.q.length)*100;document.getElementById('pt').textContent=\`Question \${st.cq+1} of \${qd.q.length}\`;document.getElementById('at').textContent=\`Attempted: \${at}/\${qd.q.length}\`;document.getElementById('pb').style.width=pr+'%'}
+function rqg(){const g=document.getElementById('qg');g.innerHTML='';let ls=-1;qd.q.forEach((_,i)=>{if(qd.sec&&qd.q[i].s!=null&&qd.q[i].s!==ls){ls=qd.q[i].s;const hd=document.createElement('div');hd.className='sec-nav-head';hd.innerHTML=qd.sec[ls];g.appendChild(hd)}const it=document.createElement('div');it.className='question-nav-item';it.textContent=i+1;it.onclick=()=>{rq(i);if(window.innerWidth<768)tnp()};g.appendChild(it)})}
+function uqg() {
+    const its = document.querySelectorAll('.question-nav-item');
+    its.forEach((it, i) => {
+        it.className = 'question-nav-item';
+        if (i === st.cq) it.classList.add('current');
+        if (st.sb) {
+            if (st.a[i] === qd.q[i].ci) it.classList.add('correct');
+            else if (st.a[i] !== null) it.classList.add('incorrect');
+        } else {
+            if (st.a[i] !== null) it.classList.add('answered');
+            if (st.mk[i]) it.classList.add('marked');
+        }
+    });
+}
+function tnp(){document.getElementById('np').classList.toggle('open')}
+function cs(){const u=st.a.filter(a=>a===null).length;if(u>0){const c=window.confirm(\`You have \${u} unattempted question(s). Do you want to submit?\`);if(!c)return}sbq()}
+function sbq(){clearInterval(st.ti);st.sb=true;let c=0,ic=0,u=0,nm=0;st.a.forEach((a,i)=>{if(a===null)u++;else if(a===qd.q[i].ci)c++;else{ic++;nm+=qd.nm}});const ts=c-nm,pc=(ts/qd.q.length)*100;document.body.style.overflow='auto';document.getElementById('quizContainer').style.display='none';document.getElementById('resultsContainer').style.display='block';document.getElementById('resultsContainer').classList.add('scrollable');if(pc>=70){document.getElementById('ri').innerHTML='<i class=\"fas fa-trophy\" style=\"color:#fbbf24\"></i>';document.getElementById('rt').textContent='Excellent Performance!'}else if(pc>=50){document.getElementById('ri').innerHTML='<i class=\"far fa-smile\" style=\"color:#48bb78\"></i>';document.getElementById('rt').textContent='Good Job!'}else{document.getElementById('ri').innerHTML='<i class=\"far fa-meh\" style=\"color:#f5576c\"></i>';document.getElementById('rt').textContent='Keep Practicing!'}document.getElementById('rs').textContent=ts.toFixed(2)+' / '+qd.q.length;document.getElementById('rp').textContent=pc.toFixed(1)+'%';document.getElementById('cc').textContent=c;document.getElementById('ic').textContent=ic;document.getElementById('uc').textContent=u;document.getElementById('nm').textContent='-'+nm.toFixed(2)}
+function ra(){st.rv=true;document.body.style.overflow='hidden';document.getElementById('resultsContainer').style.display='none';document.getElementById('quizContainer').style.display='block';rq(0);uqg()}
+function rs(){document.body.style.overflow='hidden';location.reload()}
+function applyLang(code){
+ if(!qd.L||!qd.L.data||!qd.L.data[code])return;
+ const d=qd.L.data[code];
+ for(let i=0;i<qd.q.length;i++){if(d[i]){qd.q[i].txt=d[i].txt;qd.q[i].opts=d[i].opts.slice();qd.q[i].exp=d[i].exp;}}
+ qd.lang=code;
+ document.documentElement.lang=code;
+ ['langSwitchStart','langSwitch'].forEach(function(id){const s=document.getElementById(id);if(s&&s.value!==code)s.value=code;});
+ try{localStorage.setItem('quiz_lang_'+document.title,code);}catch(e){}
+ if(window.speechSynthesis)window.speechSynthesis.cancel();
+ const qc=document.getElementById('quizContainer');
+ if(qc&&qc.style.display==='block'&&document.getElementById('qs')){
+  const hidden=[],wrong=[];
+  document.querySelectorAll('.option-btn').forEach(function(b,i){if(b.style.opacity==='0')hidden.push(i);if(b.classList.contains('incorrect')&&st.a[st.cq]!==i)wrong.push(i);});
+  rq(st.cq);
+  const btns=document.querySelectorAll('.option-btn');
+  hidden.forEach(function(i){if(btns[i]){btns[i].style.opacity='0';btns[i].style.pointerEvents='none';}});
+  if(!st.sb)wrong.forEach(function(i){if(btns[i]&&!btns[i].classList.contains('incorrect')){btns[i].classList.add('incorrect');btns[i].style.pointerEvents='none';}});
+ }
+}
+function secPerm(n){const grp={};const order=[];for(let i=0;i<n;i++){const s=qd.q[i].s==null?-1:qd.q[i].s;if(!grp[s]){grp[s]=[];order.push(s)}grp[s].push(i)}let out=[];order.forEach(function(s){const a=grp[s];rndPerm(a.length).forEach(function(x){out.push(a[x])})});return out}
+(function(){if(!qd.sec)return;const css=document.createElement('style');css.textContent='.sec-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;margin-bottom:10px;border-radius:999px;font-size:.8rem;font-weight:700;background:rgba(0,136,204,.12);color:#0088cc;border:1px solid rgba(0,136,204,.35)}.sec-nav-head{grid-column:1/-1;width:100%;flex-basis:100%;font-weight:700;font-size:.8rem;padding:8px 2px 4px;opacity:.85;border-bottom:1px solid rgba(128,128,128,.3);margin-top:4px}.sec-start{margin:12px auto 16px;max-width:600px;padding:12px 16px;border-radius:12px;border:1px solid rgba(0,136,204,.35);background:rgba(0,136,204,.08);text-align:left}.sec-start-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed rgba(128,128,128,.3);font-size:.9rem}.sec-jump{margin:0 8px;padding:3px 8px;border-radius:8px;border:1px solid rgba(0,136,204,.5);font-weight:600;font-size:.8rem;max-width:180px}.sec-res{margin:20px auto;max-width:700px;overflow-x:auto}.sec-res table{width:100%;border-collapse:collapse;font-size:.9rem}.sec-res th,.sec-res td{padding:8px 10px;border:1px solid rgba(128,128,128,.3);text-align:center}.sec-res th{background:rgba(0,136,204,.12)}.sec-res td:first-child{text-align:left;font-weight:600}';document.head.appendChild(css);
+const ms=document.getElementById('modeSelection');if(ms){const cnt=qd.sec.map(function(){return 0});qd.q.forEach(function(q){if(q.s!=null)cnt[q.s]++});const box=document.createElement('div');box.className='sec-start';box.innerHTML='<div style="font-weight:700;margin-bottom:8px"><i class="fas fa-layer-group"></i> Is quiz mein '+qd.sec.length+' sections hain</div>'+qd.sec.map(function(n,k){return '<div class="sec-start-row"><span>'+(k+1)+'. '+n+'</span><span>'+cnt[k]+' Qs</span></div>'}).join('');const tgt=ms.querySelector('.mode-cards,.mode-grid')||ms.firstElementChild;if(tgt&&tgt.parentNode)tgt.parentNode.insertBefore(box,tgt);else ms.prepend(box)}
+const pt=document.getElementById('pt');if(pt){const sel=document.createElement('select');sel.id='secJump';sel.className='sec-jump';sel.innerHTML=qd.sec.map(function(n,k){return '<option value="'+k+'">'+n+'</option>'}).join('');sel.onchange=function(){const k=+sel.value;for(let i=0;i<qd.q.length;i++){if(qd.q[i].s===k){rq(i);break}}};pt.parentNode.insertBefore(sel,pt.nextSibling)}
+const origRq=rq;rq=function(i){origRq(i);const sj=document.getElementById('secJump');if(sj&&qd.q[i]&&qd.q[i].s!=null)sj.value=String(qd.q[i].s)};
+const orig=sbq;sbq=function(){orig();try{const rows=qd.sec.map(function(){return{t:0,c:0,w:0,u:0}});qd.q.forEach(function(q,i){if(q.s==null)return;const r=rows[q.s];r.t++;const a=st.a[i];if(a===null)r.u++;else if(a===q.ci)r.c++;else r.w++});let h='<h3 style="margin-bottom:10px"><i class="fas fa-layer-group"></i> Section-wise Result</h3><table><tr><th>Section</th><th>Questions</th><th>Correct</th><th>Wrong</th><th>Skipped</th><th>Score</th></tr>';rows.forEach(function(r,k){const sc=r.c-r.w*qd.nm;h+='<tr><td>'+qd.sec[k]+'</td><td>'+r.t+'</td><td style="color:#22c55e">'+r.c+'</td><td style="color:#ef4444">'+r.w+'</td><td>'+r.u+'</td><td><b>'+sc.toFixed(2)+'</b> / '+r.t+'</td></tr>'});h+='</table>';const rc=document.getElementById('resultsContainer');let d=document.getElementById('secRes');if(!d){d=document.createElement('div');d.id='secRes';d.className='sec-res';const tgt=rc.querySelector('.results-card')||rc.firstElementChild||rc;tgt.appendChild(d)}d.innerHTML=h}catch(e){console.error(e)}}})();
+(function initLang(){
+ if(!qd.L||!qd.L.codes||qd.L.codes.length<2){qd.lang=document.documentElement.lang||'en';return;}
+ let saved=null;try{saved=localStorage.getItem('quiz_lang_'+document.title);}catch(e){}
+ applyLang(saved&&qd.L.data[saved]?saved:(qd.L.def&&qd.L.data[qd.L.def]?qd.L.def:qd.L.codes[0]));
+})();
+<\/script>
+</body>
+</html>`;
+        }
+
+        
+        function triggerHtmlDownload(quiz) {
+            const htmlContent = generatePlayableHtml(quiz);
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${cleanFileName(quiz.name)}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        let selectedFiles = [];
+        const fileInput = document.getElementById('file-input');
+        const fileList = document.getElementById('file-list');
+        const generateBtn = document.getElementById('generate-btn');
+
+        function selectedValue(group) {
+            return document.querySelector(`input[name="${group}"]:checked`).value;
+        }
+        function safeBaseName(name) {
+            return (name || 'Generated Quiz').replace(/\.(txt|html?)$/i, '').trim() || 'Generated Quiz';
+        }
+        const inputType = () => selectedValue('input-type');
+        const typeLabel = () => inputType() === 'html' ? 'HTML' : 'TXT';
+        function refreshInputTypeUI() {
+            const html = inputType() === 'html';
+            fileInput.accept = html ? '.html,.htm,text/html' : '.txt,text/plain';
+            document.getElementById('html-mode-hint').style.display = html ? 'block' : 'none';
+            document.querySelector('.settings .choice input[value="separate"] + span').innerHTML = html
+                ? '<b>Separate quizzes</b> — har HTML test se 2 file (English + Hindi)'
+                : '<b>Separate quizzes</b> — har TXT ki apni HTML file';
+            document.querySelector('.settings .choice input[value="combined"] + span').innerHTML = html
+                ? '<b>One combined quiz</b> — sabhi tests mila kar 1 English + 1 Hindi quiz'
+                : '<b>One combined quiz</b> — sabhi TXT ke questions ek HTML mein';
+            document.querySelector('.settings .choice input[value="original"] + span').innerHTML = html
+                ? '<b>Original filename</b> — test.html → test - English.html / test - Hindi.html'
+                : '<b>Original filename</b> — vision.txt → vision.html (name as-is)';
+            // selected files of the other type are no longer valid
+            selectedFiles = []; fileInput.value = '';
+            document.getElementById('file-label').textContent = `Click to select one or multiple ${typeLabel()} files`;
+            generateBtn.style.display = 'none';
+            document.getElementById('status').textContent = '';
+            refreshNamingUI();
+        }
+        document.querySelectorAll('input[name="input-type"]').forEach(el => el.addEventListener('change', refreshInputTypeUI));
+        function cleanFileName(name) {
+            return (name || 'Generated Quiz').trim().replace(/[<>:"/\\|?*\x00-\x1F]/g, '_').replace(/[. ]+$/g, '') || 'Generated Quiz';
+        }
+        function refreshNamingUI() {
+            const mode = selectedValue('name-mode');
+            document.getElementById('sequence-name').style.display = mode === 'sequence' ? 'block' : 'none';
+            document.getElementById('sequence-hint').style.display = mode === 'sequence' ? 'block' : 'none';
+            const qmNow = selectedValue('quiz-mode');
+            document.getElementById('combined-name').style.display = (qmNow === 'combined' || qmNow === 'sections') ? 'block' : 'none';
+            document.getElementById('combined-name').placeholder = qmNow === 'sections' ? 'Poore quiz ka naam (optional), e.g. Full Mock Test 1' : 'Combined quiz name (optional)';
+            document.getElementById('sections-hint').style.display = qmNow === 'sections' ? 'block' : 'none';
+            renderFileList();
+        }
+        function renderFileList() {
+            fileList.innerHTML = '';
+            if (!selectedFiles.length) return;
+            const mode = selectedValue('name-mode');
+            if (mode === 'individual') {
+                fileList.innerHTML = `<div class="hint">Har ${typeLabel()} ke saamne ${selectedValue('quiz-mode') === 'sections' ? 'SECTION' : 'quiz'} ka naam type karein (extension .html khud add hogi${inputType() === 'html' ? '; " - English" / " - Hindi" bhi khud judega' : ''}).</div>`;
+                selectedFiles.forEach((file, i) => {
+                    const row = document.createElement('div'); row.className = 'file-row';
+                    const label = document.createElement('div'); label.textContent = file.name;
+                    const input = document.createElement('input'); input.type = 'text'; input.className = 'quiz-name-input individual-name'; input.dataset.index = i; input.value = safeBaseName(file.name); input.setAttribute('aria-label', 'HTML name for ' + file.name);
+                    row.append(label, input); fileList.appendChild(row);
+                });
+            } else {
+                const ul = document.createElement('div'); ul.className = 'hint';
+                ul.textContent = selectedFiles.length + ' ' + typeLabel() + ' file(s) selected: ' + selectedFiles.map(f => f.name).join(', ');
+                fileList.appendChild(ul);
+            }
+        }
+        document.querySelectorAll('input[name="name-mode"], input[name="quiz-mode"]').forEach(el => el.addEventListener('change', refreshNamingUI));
+
+        fileInput.addEventListener('change', function(e) {
+            selectedFiles = Array.from(e.target.files || []);
+            document.getElementById('file-label').textContent = selectedFiles.length ? `${selectedFiles.length} ${typeLabel()} file(s) selected` : `Click to select one or multiple ${typeLabel()} files`;
+            refreshNamingUI();
+            generateBtn.style.display = selectedFiles.length ? 'inline-block' : 'none';
+            document.getElementById('status').textContent = selectedFiles.length ? 'Ready to process ' + selectedFiles.length + ' file(s).' : '';
+        });
+
+
+        /* ===================== TRANSLATION ENGINE (Google public endpoint, same as TXT translator) ===================== */
+        const LANG_NAMES = { en:'English', hi:'हिन्दी (Hindi)', bn:'বাংলা (Bengali)', mr:'मराठी (Marathi)', gu:'ગુજરાતી (Gujarati)', pa:'ਪੰਜਾਬੀ (Punjabi)', ta:'தமிழ் (Tamil)', te:'తెలుగు (Telugu)', kn:'ಕನ್ನಡ (Kannada)', ml:'മലയാളം (Malayalam)', ur:'اردو (Urdu)', or:'ଓଡ଼ିଆ (Odia)', as:'অসমীয়া (Assamese)', ne:'नेपाली (Nepali)', sa:'संस्कृतम् (Sanskrit)', ar:'العربية (Arabic)', fr:'Français (French)', de:'Deutsch (German)', es:'Español (Spanish)', ru:'Русский (Russian)', 'zh-CN':'中文 (Chinese)', ja:'日本語 (Japanese)' };
+        const engName = c => { const n = LANG_NAMES[c]; if (!n) return c ? c.toUpperCase() : 'Original'; const m = n.match(/\(([^)]+)\)/); return m ? m[1] : n; };
+        const langName = c => LANG_NAMES[c] || (c ? c.toUpperCase() : 'Original');
+        const T_SEP = 'ZXQLINESEPZX';
+        const T_MAX = 3500, T_CONC = 10;
+        const T_CACHE = new Map();
+        let T_LAST_ERR = '';
+        function guessLang(texts) {
+            const s = texts.join(' ');
+            const dev = (s.match(/[\u0900-\u097F]/g) || []).length, lat = (s.match(/[A-Za-z]/g) || []).length;
+            return dev > lat ? 'hi' : 'en';
+        }
+        // Global limiter: sab languages milake ek saath max T_CONC requests (Google block na kare)
+        let T_ACTIVE = 0; const T_QUEUE = [];
+        async function tSlot(fn) {
+            if (T_ACTIVE >= T_CONC) await new Promise(r => T_QUEUE.push(r));
+            T_ACTIVE++;
+            try { return await fn(); } finally { T_ACTIVE--; const n = T_QUEUE.shift(); if (n) n(); }
+        }
+        async function tFetch(url, opts, ms) {
+            const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), ms || 20000);
+            try { return await fetch(url, Object.assign({}, opts, { signal: ctl.signal })); } finally { clearTimeout(t); }
+        }
+        // Endpoint 1: translate.googleapis.com (POST, bada text)
+        async function ep1(text, tl, sl) {
+            const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=' + encodeURIComponent(sl || 'auto') + '&tl=' + encodeURIComponent(tl) + '&dt=t';
+            const r = await tFetch(url, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: 'q=' + encodeURIComponent(text) });
+            if (!r.ok) throw Object.assign(new Error('HTTP ' + r.status), { status: r.status });
+            const data = await r.json();
+            if (!Array.isArray(data) || !Array.isArray(data[0])) throw new Error('Unexpected response');
+            return { text: data[0].map(x => (x && x[0]) ? x[0] : '').join(''), src: typeof data[2] === 'string' ? data[2] : null };
+        }
+        // Endpoint 2 (backup): clients5.google.com
+        async function ep2(text, tl, sl) {
+            const url = 'https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=' + encodeURIComponent(sl || 'auto') + '&tl=' + encodeURIComponent(tl);
+            const r = await tFetch(url, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: 'q=' + encodeURIComponent(text) });
+            if (!r.ok) throw Object.assign(new Error('HTTP ' + r.status), { status: r.status });
+            const data = await r.json();
+            let item = Array.isArray(data) ? data[0] : null;
+            if (Array.isArray(item)) return { text: String(item[0] || ''), src: typeof item[1] === 'string' ? item[1] : null };
+            if (typeof item === 'string') return { text: item, src: null };
+            if (data && Array.isArray(data.sentences)) return { text: data.sentences.map(x => x.trans || '').join(''), src: data.src || null };
+            throw new Error('Unexpected response');
+        }
+        let T_PREF = 0;
+        async function gtx(text, tl, sl) {
+            const ck = (sl || 'auto') + '|' + tl + '|' + text;
+            if (T_CACHE.has(ck)) return T_CACHE.get(ck);
+            const eps = T_PREF ? [ep2, ep1] : [ep1, ep2];
+            let lastErr;
+            for (let attempt = 0; attempt < 4; attempt++) {
+                const ep = eps[attempt % 2];
+                try {
+                    const res = await tSlot(() => ep(text, tl, sl));
+                    if (attempt % 2) T_PREF = 1 - T_PREF; // jo endpoint chala, wahi aage pehle use hoga
+                    T_CACHE.set(ck, res);
+                    return res;
+                } catch (e) {
+                    lastErr = e; T_LAST_ERR = e.name === 'AbortError' ? 'timeout' : (e.message || String(e));
+                    const wait = e.status === 429 ? 1500 * (attempt + 1) : 250 * (attempt + 1);
+                    await new Promise(res => setTimeout(res, wait));
+                }
+            }
+            throw lastErr || new Error('Translation failed');
+        }
+        // Translate a list of strings, preserving order. Failed pieces keep the original text.
+        async function translateList(texts, tl, onProgress, sl) {
+            const out = new Array(texts.length);
+            const srcVotes = {};
+            const batches = []; let cur = [], len = 0;
+            texts.forEach((t, i) => {
+                if (!String(t).trim()) { out[i] = t; return; }
+                const n = String(t).length + T_SEP.length + 2;
+                if (cur.length && len + n > T_MAX) { batches.push(cur); cur = []; len = 0; }
+                cur.push(i); len += n;
+            });
+            if (cur.length) batches.push(cur);
+            let failures = 0, done = 0, okCount = 0;
+            // batch fail ho to aadha-aadha karke try (har line alag bhejne se bahut slow hota tha)
+            async function run(b, depth) {
+                try {
+                    const r = await gtx(b.map(i => texts[i]).join('\n' + T_SEP + '\n'), tl, sl);
+                    if (r.src) srcVotes[r.src] = (srcVotes[r.src] || 0) + 1;
+                    const pieces = r.text.split(/\s*Z\s*X\s*Q\s*L\s*I\s*N\s*E\s*S\s*E\s*P\s*Z\s*X\s*/i).map(x => x.trim());
+                    if (pieces.length === b.length) { b.forEach((i, j) => { out[i] = pieces[j] || texts[i]; }); okCount += b.length; return; }
+                    if (b.length === 1) { out[b[0]] = r.text.trim() || texts[b[0]]; okCount++; return; }
+                } catch (e) {
+                    if (b.length === 1 || depth >= 2) { b.forEach(i => { out[i] = texts[i]; }); failures += b.length; return; }
+                }
+                const m = Math.ceil(b.length / 2);
+                await Promise.all([run(b.slice(0, m), depth + 1), run(b.slice(m), depth + 1)]);
+            }
+            await Promise.all(batches.map(b => run(b, 0).then(() => { done++; if (onProgress) onProgress(done, batches.length); })));
+            let src = null, best = 0;
+            Object.keys(srcVotes).forEach(k => { if (srcVotes[k] > best) { best = srcVotes[k]; src = k; } });
+            return { out, src, failures, okCount };
+        }
+        // Translate a whole question set (question, options, explanation)
+        async function translateQuestions(questions, tl, onProgress, sl) {
+            const flat = [], map = [];
+            questions.forEach((q, qi) => {
+                flat.push(q.question); map.push([qi, 'q']);
+                q.options.forEach((o, oi) => { const pm = String(o.text).match(/^\s*(\([A-Da-d1-9]\)|[A-Da-d1-9][.)])\s+/); flat.push(pm ? o.text.slice(pm[0].length) : o.text); map.push([qi, 'o', oi, pm ? pm[0] : '']); });
+                const hasEx = /^\s*Ex\s*:\s*/i.test(q.explanation);
+                const exp = q.explanation === 'No explanation provided.' ? '' : q.explanation.replace(/^\s*Ex\s*:\s*/i, '');
+                flat.push(exp); map.push([qi, 'e', hasEx]);
+            });
+            const { out, src, failures, okCount } = await translateList(flat, tl, onProgress, sl);
+            const res = questions.map(q => ({ question: q.question, options: q.options.map(o => ({ text: o.text, isCorrect: o.isCorrect })), explanation: q.explanation }));
+            map.forEach((m, k) => {
+                const v = out[k] == null ? flat[k] : out[k];
+                if (m[1] === 'q') res[m[0]].question = v;
+                else if (m[1] === 'o') res[m[0]].options[m[2]].text = m[3] + v;
+                else res[m[0]].explanation = v ? ((m[2] ? 'Ex: ' : '') + v) : questions[m[0]].explanation;
+            });
+            return { questions: res, src: src || guessLang(flat.slice(0, 40)), failures, okCount };
+        }
+        async function detectSource(questions) {
+            const sample = questions.slice(0, 5).map(q => q.question).join('\n').slice(0, 1200);
+            try { const r = await gtx(sample, 'en'); if (r.src) return r.src; } catch (e) {}
+            return guessLang(questions.slice(0, 20).map(q => q.question));
+        }
+        const selectedLangs = () => Array.from(document.querySelectorAll('input[name="target-lang"]:checked')).map(x => x.value);
+        function refreshLangCount() { const n = selectedLangs().length; document.getElementById('lang-count').textContent = n + ' language(s) selected'; }
+        document.querySelectorAll('input[name="target-lang"]').forEach(el => el.addEventListener('change', refreshLangCount));
+        document.getElementById('lang-all').addEventListener('click', () => { document.querySelectorAll('input[name="target-lang"]').forEach(x => x.checked = true); refreshLangCount(); });
+        document.getElementById('lang-none').addEventListener('click', () => { document.querySelectorAll('input[name="target-lang"]').forEach(x => x.checked = false); refreshLangCount(); });
+        refreshLangCount();
+        function refreshTranslateUI() {
+            const isTxt = inputType() === 'txt';
+            const on = selectedValue('translate-mode') === 'on';
+            document.getElementById('translate-options').style.display = on ? 'block' : 'none';
+            document.getElementById('target-lang').style.display = isTxt ? 'block' : 'none';
+            document.querySelector('label[for="target-lang"]').style.display = isTxt ? 'block' : 'none';
+            document.querySelector('#translate-settings .choice input[value="off"] + span').innerHTML = isTxt
+                ? '<b>Translate OFF</b> — quiz usi language mein jo TXT mein hai (pehle jaisa)'
+                : '<b>Language switch OFF</b> — English aur Hindi ki 2 alag file (pehle jaisa)';
+            document.querySelector('#translate-settings .choice input[value="on"] + span').innerHTML = isTxt
+                ? '<b>Translate ON</b> — original + translated quiz (internet chahiye)'
+                : '<b>Language switch ON</b> — quiz ke andar English ⇄ Hindi switch';
+        }
+        document.querySelectorAll('input[name="translate-mode"]').forEach(el => el.addEventListener('change', refreshTranslateUI));
+        document.querySelectorAll('input[name="input-type"]').forEach(el => el.addEventListener('change', refreshTranslateUI));
+
+        function readTextFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(String(e.target.result || ''));
+                reader.onerror = () => reject(new Error('Could not read ' + file.name));
+                reader.readAsText(file);
+            });
+        }
+        function parseText(text) {
+            parseQuizFile(text);
+            return parsedQuestions.map(q => ({ question:q.question, options:q.options.map(o => ({text:o.text, isCorrect:o.isCorrect})), explanation:q.explanation }));
+        }
+        function makeSequenceNames(base, count) {
+            const match = base.trim().match(/^(.*?)(\d+)\s*$/);
+            if (!match) throw new Error('Sequential name ke end mein number hona chahiye, jaise VISION IAS 8801.');
+            const prefix = match[1];
+            const digits = match[2];
+            const start = Number(digits);
+            return Array.from({length:count}, (_, i) => prefix + String(start + i).padStart(digits.length, '0'));
+        }
+        generateBtn.addEventListener('click', async function() {
+            if (!selectedFiles.length) return;
+            generateBtn.disabled = true;
+            document.getElementById('status').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Reading and processing files…';
+            try {
+                const results = [];
+                const htmlMode = inputType() === 'html';
+                for (const file of selectedFiles) {
+                    const text = await readTextFile(file);
+                    if (htmlMode) {
+                        if (!/\.html?$/i.test(file.name)) throw new Error('Yeh HTML file nahi hai: ' + file.name);
+                        const split = Bilingual.splitTest(text);
+                        if (!split.count) throw new Error('Is HTML test mein questions nahi mile: ' + file.name);
+                        results.push({file, questions: split.en, hindi: split.hi, hindiFound: split.hindiFound});
+                    } else {
+                        const questions = parseText(text);
+                        if (!questions.length) throw new Error('No valid questions found in: ' + file.name);
+                        results.push({file, questions});
+                    }
+                }
+                const rawQuizMode = selectedValue('quiz-mode');
+                const sectionMode = rawQuizMode === 'sections';
+                const quizMode = sectionMode ? 'combined' : rawQuizMode;
+                const nameMode = selectedValue('name-mode');
+                let names;
+                if (nameMode === 'original') names = results.map(r => safeBaseName(r.file.name));
+                else if (nameMode === 'individual') {
+                    names = results.map((r, i) => {
+                        const input = document.querySelector(`.individual-name[data-index="${i}"]`);
+                        return (input && input.value.trim()) || safeBaseName(r.file.name);
+                    });
+                } else names = makeSequenceNames(document.getElementById('sequence-name').value, results.length);
+
+                const jobs = [];
+                const combinedBase = () => document.getElementById('combined-name').value.trim() || ((nameMode === 'original' || sectionMode) ? safeBaseName(results[0].file.name) + (results.length > 1 ? ' + ' + (results.length - 1) + ' more' : '') : names[0]);
+                const translateOn = selectedValue('translate-mode') === 'on';
+                const outputMode = selectedValue('bilingual-output');
+                const setStatus = h => { document.getElementById('status').innerHTML = h; };
+                let translateWarn = '';
+                // Build one or two jobs for a bilingual pair
+                const pushPair = (base, origQs, origLang, trQs, trLang) => {
+                    const langs = { codes: [origLang, trLang], names: { [origLang]: langName(origLang), [trLang]: langName(trLang) }, sets: { [origLang]: origQs, [trLang]: trQs } };
+                    if (outputMode === 'single') {
+                        jobs.push({ name: base, questions: origQs, lang: origLang, langs });
+                    } else {
+                        jobs.push({ name: base + ' - ' + engName(origLang), questions: origQs, lang: origLang, langs });
+                        jobs.push({ name: base + ' - ' + engName(trLang), questions: trQs, lang: trLang, langs });
+                    }
+                };
+                const pushMulti = (base, sets, target) => {
+                    const J = target || jobs;
+                    const codes = Object.keys(sets);
+                    const names = {}; codes.forEach(c => names[c] = langName(c));
+                    const langs = { codes, names, sets };
+                    if (outputMode === 'single') J.push({ name: base, questions: sets[codes[0]], lang: codes[0], langs });
+                    else codes.forEach(c => J.push({ name: base + ' - ' + engName(c), questions: sets[c], lang: c, langs }));
+                };
+                if (htmlMode) {
+                    if (translateOn) {
+                        if (quizMode === 'combined') pushPair(combinedBase(), results.flatMap(r => r.questions), 'en', results.flatMap(r => r.hindi), 'hi');
+                        else results.forEach((r, i) => pushPair(names[i], r.questions, 'en', r.hindi, 'hi'));
+                    } else if (quizMode === 'combined') {
+                        // every HTML test becomes two quizzes: English and Hindi
+                        const base = combinedBase();
+                        jobs.push({name: base + ' - English', questions: results.flatMap(r => r.questions), lang: 'en'});
+                        jobs.push({name: base + ' - Hindi', questions: results.flatMap(r => r.hindi), lang: 'hi'});
+                    } else {
+                        results.forEach((r, i) => {
+                            jobs.push({name: names[i] + ' - English', questions: r.questions, lang: 'en'});
+                            jobs.push({name: names[i] + ' - Hindi', questions: r.hindi, lang: 'hi'});
+                        });
+                    }
+                } else {
+                    const groups = quizMode === 'combined'
+                        ? [{ name: combinedBase(), questions: results.flatMap(r => r.questions) }]
+                        : results.map((r, i) => ({ name: names[i], questions: r.questions }));
+                    if (!translateOn) {
+                        groups.forEach(g => jobs.push({ name: g.name, questions: g.questions, lang: guessLang(g.questions.slice(0, 20).map(q => q.question)) }));
+                    } else {
+                        const tls = selectedLangs();
+                        if (!tls.length) throw new Error('Kam se kam ek language select karein.');
+                        const esc = t => t.replace(/</g, '&lt;');
+                        const gProg = {};
+                        const showAll = () => setStatus('<i class="fa-solid fa-spinner fa-spin"></i> Translating ' + groups.length + ' file(s) ek saath, ' + tls.length + ' language(s) mein…<br>' + groups.map((g, i) => esc(g.name) + ': ' + (gProg[i] || 0) + '%').join('<br>'));
+                        showAll();
+                        // Sab files/groups ek saath parallel translate hote hain (global limiter T_CONC requests control karta hai)
+                        const processGroup = async (g, gi) => {
+                            const localJobs = [];
+                            const src = String(await detectSource(g.questions)).split('-')[0];
+                            const targets = tls.filter(t => t.split('-')[0] !== src);
+                            if (targets.length < tls.length) translateWarn += '<div style="color:#fbbf24;margin-top:6px">⚠️ "' + esc(g.name) + '" pehle se hi ' + langName(src) + ' mein hai — us language ka original use hua.</div>';
+                            const sets = { [src]: g.questions };
+                            if (!targets.length) { localJobs.push({ name: g.name, questions: g.questions, lang: src }); gProg[gi] = 100; showAll(); return localJobs; }
+                            const prog = {};
+                            const results2 = await Promise.all(targets.map(tl => translateQuestions(g.questions, tl, (d, t) => {
+                                prog[tl] = Math.round(d / t * 100);
+                                gProg[gi] = Math.round(targets.reduce((a, x) => a + (prog[x] || 0), 0) / targets.length);
+                                showAll();
+                            }, src).then(tr => ({ tl, tr }))));
+                            let allFailed = true;
+                            for (const { tl, tr } of results2) {
+                                if (tr.failures) translateWarn += '<div style="color:#fbbf24;margin-top:6px">⚠️ "' + esc(g.name) + '" (' + engName(tl) + '): ' + tr.failures + ' text(s) translate nahi hue, wahan original text rakha gaya.</div>';
+                                if (tr.okCount > 0) { allFailed = false; sets[tl] = tr.questions; }
+                            }
+                            if (allFailed) throw new Error('Translation nahi ho paaya (' + (T_LAST_ERR || 'unknown') + '). Google ne thodi der ke liye block kiya ho sakta hai — 1-2 minute baad ya kam languages ke saath try karein. File ko Chrome mein kholen; agar VPN/ad-blocker ho to band karke dekhein.');
+                            pushMulti(g.name, sets, localJobs);
+                            gProg[gi] = 100; showAll();
+                            return localJobs;
+                        };
+                        const groupJobs = await Promise.all(groups.map((g, gi) => processGroup(g, gi)));
+                        groupJobs.forEach(arr => arr.forEach(j => jobs.push(j))); // original file order maintain
+                    }
+                }
+                if (sectionMode) {
+                    const secMeta = results.map((r, i) => ({ n: names[i], c: r.questions.length }));
+                    jobs.forEach(j => { j.sections = secMeta; });
+                }
+                for (const job of jobs) {
+                    triggerHtmlDownload({sections: job.sections, id:'G'+Math.floor(Math.random()*1000000), name:job.name, lang: job.lang, langs: job.langs, createdAt:new Date().toISOString(), questions:job.questions});
+                    // Small delay allows browsers to register multiple file downloads reliably.
+                    await new Promise(resolve => setTimeout(resolve, 250));
+                }
+                const qCount = results.reduce((n, r) => n + r.questions.length, 0);
+                const noHindi = htmlMode ? results.filter(r => !r.hindiFound).map(r => r.file.name) : [];
+                document.getElementById('status').innerHTML = `<span style="color:#00ffcc"><i class="fa-solid fa-check"></i> Done! ${jobs.length} HTML file(s) generated${sectionMode ? ' (' + results.length + ' sections)' : ''}${htmlMode ? ` (${qCount} questions → English + Hindi)` : ''}.</span>`
+                    + translateWarn + (noHindi.length ? `<div style="color:#fbbf24;margin-top:6px">⚠️ In files mein alag Hindi text nahi mila: ${noHindi.map(n => n.replace(/</g, '&lt;')).join(', ')}</div>` : '');
+            } catch (err) {
+                console.error(err);
+                document.getElementById('status').innerHTML = `<span style="color:#ff4444"><i class="fa-solid fa-times"></i> ${err.message}</span>`;
+            } finally {
+                generateBtn.disabled = false;
+            }
+        });
+        refreshNamingUI();
+        refreshTranslateUI();
+    </script>
+</body>
+</html>

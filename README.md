@@ -1,4 +1,4 @@
-# QUIZINOX v2 — Offline + Online Android Quiz App
+# QUIZINOX v2.1 — Offline + Online Android Quiz App
 
 Local-first quiz maker/player built from the QUIZ-BOT engines. Works fully offline;
 AI features use the internet only when you start them.
@@ -11,13 +11,13 @@ AI features use the internet only when you start them.
 - Unfinished attempts are saved — resume from the dashboard
 - Results with filters (correct / wrong / unanswered), "Practise mistakes" quiz, PDF report
 - Import TXT / JSON / PDF · Export JSON / TXT (😂 format) / PDF question paper
-- **Coaching PDF → TXT converter**: Any PDF (auto), ForumIAS SFG, Vajiram & Ravi (test + solution), VisionIAS (test + solution)
+- **Coaching PDF → TXT converter**: Any PDF (auto), ForumIAS SFG, Vajiram & Ravi, VisionIAS, PW Only IAS and ForumIAS 100 (original supplied suite included)
 - TXT fixer + 😂 emoji formatter (ports of the bot's txtfixer)
 - Backup / restore (merge or replace) · analytics with score trend
 
 **Online (optional, your own Gemini key)**
 - AI question generator from a topic or from your notes / PDF (English / Hindi / bilingual)
-- AI translation of any quiz
+- Online bulk quiz translation into 100+ Indian and world languages (question, options and explanations); switch language during a live attempt without changing answer indexes\n- Result exports: playable HTML quiz, Test PDF, Solution PDF, merged Test+Solution PDF, Study Notes HTML and print-to-PDF Notes in original or translated language\n- Original supplied Quiz Maker, Test Series Maker, Notes Generator and TXT/PDF Translator are bundled under File Studio / result exports and prefilled with the selected quiz where supported
 - Topbar shows ONLINE / OFFLINE status live
 
 ## Build the APK (GitHub)
@@ -43,3 +43,9 @@ npm run dev
 - Scanned (image-only) PDFs have no text layer and cannot be converted offline.
 - Exported files open the Android share sheet — choose Files / Drive / WhatsApp / Telegram to save.
 - The workflow builds a debug APK for direct install. For Play Store, create a signed release build.
+
+## QUIZINOX 2.1 additions
+- PW Only IAS and ForumIAS PDF conversion are available in the bundled original coaching converter suite. TXT downloads are passed back to QUIZINOX for direct quiz import.
+- The translation engine uses the same public Google Translate endpoint approach as the supplied translator. It is online-only and may be temporarily rate-limited; translation quality and availability are not guaranteed.
+- Test / Solution / Test+Solution and Notes PDF actions open print-ready HTML. Use the browser or Android print dialog and choose **Save as PDF**. This preserves Unicode scripts better than jsPDF's built-in Latin fonts.
+- Original standalone tools are stored in `public/tools/` and can be opened from the result export panel.

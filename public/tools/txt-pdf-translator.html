@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Universal TXT + PDF Translator — V9 (Bulk • Any → Any)</title>
+<style>
+:root{--bg:#0b1020;--panel:#131b30;--panel2:#19243d;--text:#edf2ff;--muted:#a9b7d3;--accent:#7c9cff;--accent2:#42d6b5;--danger:#ff7777}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1b2c52 0,#0b1020 60%);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans Devanagari","Mangal",sans-serif;min-height:100vh;padding:24px}
+.wrap{max-width:1000px;margin:auto}.hero{padding:20px 0 12px}.eyebrow{color:var(--accent2);font-weight:700;letter-spacing:.08em;font-size:12px;text-transform:uppercase}.hero h1{font-size:clamp(27px,4vw,42px);line-height:1.15;margin:10px 0}.hero p{color:var(--muted);max-width:760px;line-height:1.65}
+.panel{background:rgba(19,27,48,.92);border:1px solid #2b3b5d;border-radius:20px;padding:22px;margin:18px 0;box-shadow:0 15px 45px #0002}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.drop{border:1.5px dashed #52658c;border-radius:15px;padding:22px;text-align:center;background:#0f172a}.drop strong{display:block;font-size:18px;margin-bottom:8px}.drop small{color:var(--muted)}
+input[type=file]{max-width:100%;margin-top:14px;color:var(--muted)}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+button{border:0;border-radius:12px;padding:12px 18px;font-weight:750;cursor:pointer;font-size:14px;transition:.15s}button:disabled{opacity:.45;cursor:not-allowed}.primary{background:linear-gradient(135deg,var(--accent),#9a7cff);color:#081022}.secondary{background:#263655;color:var(--text);border:1px solid #405477}.success{background:var(--accent2);color:#05231e}
+.status{margin-top:18px;background:#0d1528;border:1px solid #2b3b5d;border-radius:13px;padding:14px}.bar{height:8px;background:#273653;border-radius:99px;overflow:hidden;margin:10px 0}.bar>div{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .2s}.muted{color:var(--muted);font-size:13px;line-height:1.6}.warning{color:#ffd28a}.good{color:#83f0ce}.bad{color:#ff9c9c}
+textarea{width:100%;min-height:180px;background:#0b1222;color:#edf2ff;border:1px solid #304263;border-radius:12px;padding:14px;resize:vertical;font:13px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace}
+.langrow{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:start;margin-top:18px}.langrow label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}select{width:100%;background:#0b1222;color:var(--text);border:1px solid #405477;border-radius:12px;padding:12px;font-size:14px}#swap{margin-top:22px;padding:12px 14px}
+.frow{display:grid;grid-template-columns:1fr 200px 90px auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid #2b3b5d;border-radius:12px;margin-top:8px;background:#0f172a;cursor:pointer}.frow.sel{border-color:var(--accent)}.fname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fstat{font-size:12px;color:var(--muted)}.fbar{height:6px;background:#273653;border-radius:99px;overflow:hidden}.fbar>div{height:100%;background:var(--accent2)}.facts{display:flex;gap:6px}.facts button{padding:6px 10px;font-size:12px}
+.previewhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}.previewhead h2{font-size:18px;margin:0}.pill{background:#253654;border-radius:99px;padding:5px 10px;color:#b9c8e5;font-size:12px}
+footer{color:var(--muted);font-size:12px;text-align:center;padding:16px}
+@media(max-width:720px){.frow{grid-template-columns:1fr}.langrow{grid-template-columns:1fr}#swap{margin-top:0}body{padding:14px}.grid{grid-template-columns:1fr}.panel{padding:16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">Free • Bulk TXT/PDF • 100+ languages • Any → Any • ZIP</div>
+    <h1>🌍 Universal TXT + PDF Translator — V9</h1>
+    <p>Bahut saari TXT / selectable-text PDF files ek saath upload karein (har file ki language alag-alag auto-detect hoti hai) — source language apne aap detect hoti hai. Phir Indian ya world ki kisi bhi language mein translate karein. Line formatting aur PDF ka page/column order jitna mumkin ho preserve hota hai.</p>
+  </div>
+  <div class="panel">
+    <div class="grid">
+      <div class="drop">
+        <strong>📄 Input TXT / PDF files (ek saath kitni bhi)</strong>
+        <small>TXT, selectable-text PDF, questions, options aur explanations</small><br>
+        <input id="file" type="file" multiple accept=".txt,.pdf,text/plain,application/pdf">
+      </div>
+      <div class="drop">
+        <strong>🛡️ Format protection</strong>
+        <small>Q numbers, “Ex:”, 😂, ✅, option order, page breaks aur column reading order ko best-effort preserve kiya jayega.</small>
+      </div>
+    </div>
+    <div class="langrow">
+      <div><label for="sl">From (source language)</label><select id="sl"></select><div id="detected" class="muted"></div></div>
+      <button id="swap" class="secondary" title="Swap languages">⇄</button>
+      <div><label for="tl">To (target language)</label><select id="tl"></select></div>
+    </div>
+    <div class="actions">
+      <button id="start" class="primary" disabled>✨ Translate All Files</button>
+      <button id="stop" class="secondary" disabled>Pause / Stop</button>
+      <button id="download" class="success" disabled>⬇ Download All TXT (alag-alag)</button>
+      <button id="downloadPdf" class="primary" disabled>📄 Save PDF (selected file)</button>
+      <button id="downloadZip" class="success" disabled>🗜 Download ZIP (all files)</button>
+      <button id="reset" class="secondary">Reset</button>
+    </div>
+    <div class="status">
+      <div id="statusText">Pehle apni .txt file select karein.</div>
+      <div class="bar"><div id="bar"></div></div>
+      <div id="details" class="muted">Translation ke liye internet chahiye. Koi API key ya payment ki zaroorat nahi; public translation endpoint kabhi-kabhi rate-limit ho sakta hai.</div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="previewhead"><h2>🗂 Files queue</h2><span class="pill" id="fcount">0 files</span></div>
+    <div id="list"><p class="muted">Abhi koi file nahi. Upar se ek ya zyada .txt / .pdf files select karein.</p></div>
+  </div>
+  <div class="panel">
+    <div class="previewhead"><h2>👀 Output preview <span class="muted">(file par click karein)</span></h2><span class="pill" id="counts">0 lines</span></div>
+    <textarea id="preview" spellcheck="false" placeholder="Translated text yahan dikhega…"></textarea>
+    <p class="muted">Aap preview mein manually corrections kar sakte hain. Download button current preview ko hi save karega.</p>
+  </div>
+  <div class="panel">
+    <h2 style="font-size:18px;margin-top:0">⚙️ Kaise kaam karta hai?</h2>
+    <ul class="muted">
+      <li>TXT mein original line breaks/blank lines rakhta hai. PDF mein page-wise text extract karta hai aur two-column pages par left-to-right reading order ka andaza lagata hai.</li>
+      <li>Q1., Q2., Ex:, 😂, ✅, (A)/(B)/(a)/(b), standalone numbers aur symbols ko protect karne ki koshish karta hai.</li>
+      <li><b>Bulk:</b> saari files line se (ek ke baad ek) translate hoti hain. Har file ki row mein alag TXT/PDF download hai; “Download All TXT” sabhi ko alag-alag save karta hai (browser “multiple downloads allow” puchh sakta hai) aur ZIP mein saari translated TXT files ek archive mein aati hain. PDF per-file hi banti hai.</li>
+      <li><b>Auto-detect:</b> file load hote hi source language pehchani jaati hai (aap manually bhi chun sakte hain). Target mein koi bhi language chunein; ⇄ button se From/To swap hota hai. Arabic, Urdu, Hebrew jaisi RTL languages sahi direction mein dikhti hain.</li>
+      <li>Multiple lines ko ek request mein batch karta hai aur kuch batches parallel chalata hai, taaki translation tez ho.</li><li>PDF export translated text se ek nayi, printable PDF banata hai. Yeh original PDF ke images, diagrams, exact fonts ya page layout ko bilkul same nahi rakhta. Scanned/image-only PDF ke liye OCR chahiye, jo is version mein nahi hai.</li>
+      <li>Translation Google Translate ke public, unofficial web endpoint se hota hai. Yeh free hai, lekin Google ki service badalne ya rate limit karne par fail ho sakta hai.</li>
+    </ul>
+    <p class="muted warning">Important: koi bhi automatic translator 100% perfect matra/grammar ki guarantee nahi de sakta. Exam content mein names, facts, legal terms aur answer keys ko ek baar review zaroor karein. Original file ko tool overwrite nahi karta. PDF ke text extraction mein columns/tables ka order complex PDFs mein imperfect ho sakta hai; download se pehle preview check karein.</p>
+  </div>
+  <footer>TXT/PDF question banks • 100+ Indian &amp; world languages • Original file remains unchanged</footer>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+let sourceText = '', running = false, stopRequested = false, translatedText = '', selectedName = 'translated';
+
+function setStatus(t, cls='') {
+  $('statusText').textContent = t;
+  $('statusText').className = cls;
+}
+async function extractPdfText(file) {
+  // PDF.js is loaded from a public CDN. This extracts selectable text and approximates reading order.
+  const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+  const data = new Uint8Array(await file.arrayBuffer());
+  const pdf = await pdfjsLib.getDocument({data}).promise;
+  const pages = [];
+  for (let pageNo = 1; pageNo <= pdf.numPages; pageNo++) {
+    const page = await pdf.getPage(pageNo);
+    const content = await page.getTextContent();
+    const viewport = page.getViewport({scale: 1});
+    const items = content.items.filter(it => it.str && it.str.trim()).map(it => ({
+      text: it.str, x: it.transform[4], y: it.transform[5],
+      w: Math.abs(it.width || 0), h: Math.abs(it.height || it.transform[3] || 0)
+    }));
+    if (!items.length) {
+      pages.push(`===== PAGE ${pageNo} =====\n[Is page par selectable text nahi mila — scanned/image-only page ho sakta hai]`);
+      continue;
+    }
+    const leftCount = items.filter(i => i.x < viewport.width * 0.48).length;
+    const rightCount = items.filter(i => i.x >= viewport.width * 0.48).length;
+    const twoCols = leftCount > 18 && rightCount > 18 && rightCount > items.length * 0.12 && leftCount > items.length * 0.12;
+    const groups = twoCols ? [
+      items.filter(i => i.x < viewport.width * 0.48),
+      items.filter(i => i.x >= viewport.width * 0.48)
+    ] : [items];
+    const pageLines = [];
+    for (let gi=0; gi<groups.length; gi++) {
+      const group = groups[gi];
+      group.sort((a,b) => b.y-a.y || a.x-b.x);
+      const lines = [];
+      for (const item of group) {
+        let line = lines.find(l => Math.abs(l.y - item.y) <= Math.max(2.5, Math.min(5, item.h * 0.35)));
+        if (!line) { line = {y:item.y, items:[]}; lines.push(line); }
+        line.items.push(item);
+      }
+      lines.sort((a,b) => b.y-a.y);
+      for (const line of lines) {
+        line.items.sort((a,b) => a.x-b.x);
+        let text = '', prev = null;
+        for (const it of line.items) {
+          if (prev) {
+            const gap = it.x - (prev.x + prev.w);
+            if (gap > 1.8 && !/[\s\-–—]$/.test(text) && !/^[,.;:!?%)\]}]/.test(it.text)) text += ' ';
+          }
+          text += it.text;
+          prev = it;
+        }
+        text = text.replace(/[ \t]+/g, ' ').trim();
+        if (text) pageLines.push(text);
+      }
+      if (twoCols && gi === 0) pageLines.push('');
+    }
+    pages.push(`===== PAGE ${pageNo} =====\n` + pageLines.join('\n'));
+  }
+  return pages.join('\n\n');
+}
+
+let files = [], cur = -1, batchRunning = false;
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function updatePreview() {
+  const f = files[cur];
+  $('preview').value = f ? (f.out || '') : '';
+  $('counts').textContent = f && f.out ? f.out.split('\n').length + ' lines' : '0 lines';
+}
+function refreshButtons() {
+  const any = files.some(f => f.out), f = files[cur];
+  $('start').disabled = batchRunning || !files.some(x => x.source && x.state !== 'error');
+  $('stop').disabled = !batchRunning;
+  $('download').disabled = $('downloadZip').disabled = !any;
+  $('downloadPdf').disabled = !(f && f.out);
+}
+function renderList() {
+  $('fcount').textContent = files.length + ' file' + (files.length === 1 ? '' : 's');
+  if (!files.length) { $('list').innerHTML = '<p class="muted">Abhi koi file nahi. Upar se ek ya zyada .txt / .pdf files select karein.</p>'; refreshButtons(); return; }
+  $('list').innerHTML = files.map((f, i) => {
+    const cls = f.state === 'done' ? 'good' : (f.state === 'error' ? 'bad' : (f.state === 'partial' || f.state === 'skipped' || f.state === 'stopped' ? 'warning' : ''));
+    return `<div class="frow${i === cur ? ' sel' : ''}" data-i="${i}"><div class="fname" title="${esc(f.name)}">📄 ${esc(f.name)}</div><div class="fstat ${cls}">${esc(f.msg)}</div><div class="fbar"><div style="width:${f.pct || 0}%"></div></div><div class="facts"><button class="success" data-a="txt" ${f.out ? '' : 'disabled'}>TXT</button><button class="primary" data-a="pdf" ${f.out ? '' : 'disabled'}>PDF</button><button class="secondary" data-a="del" ${batchRunning ? 'disabled' : ''}>✕</button></div></div>`;
+  }).join('');
+  refreshButtons();
+}
+$('list').addEventListener('click', e => {
+  const row = e.target.closest('.frow'); if (!row) return;
+  const i = +row.dataset.i, a = e.target.closest('button')?.dataset.a, f = files[i];
+  if (a === 'txt') saveTxt(f);
+  else if (a === 'pdf') openPdf(f);
+  else if (a === 'del') { files.splice(i, 1); if (cur >= files.length) cur = files.length - 1; }
+  else cur = i;
+  if (a !== 'txt' && a !== 'pdf' || true) { updatePreview(); renderList(); }
+});
+$('preview').addEventListener('input', () => { const f = files[cur]; if (f && f.state !== 'running') { f.out = $('preview').value; } });
+async function detectFile(o) {
+  try { o.det = await detect(o.source); o.msg = `${o.source.split('\n').length} lines • ${o.det ? nameOf(o.det) : 'language ?'}`; }
+  catch (e) { o.msg = `${o.source.split('\n').length} lines • detect later`; }
+  renderList();
+}
+$('file').addEventListener('change', async e => {
+  const list = [...e.target.files]; if (!list.length) return;
+  $('start').disabled = true;
+  let n = 0;
+  for (const f of list) {
+    const isPdf = /\.pdf$/i.test(f.name) || f.type === 'application/pdf';
+    const o = { name: f.name, base: f.name.replace(/\.(pdf|txt)$/i, ''), source: '', out: '', state: 'ready', msg: 'Reading…', pct: 0, det: '', tl: '' };
+    files.push(o); if (cur < 0) cur = 0; renderList();
+    setStatus(`File ${++n}/${list.length} read ho rahi hai: ${f.name}`);
+    try {
+      o.source = isPdf ? await extractPdfText(f) : await f.text();
+      if (!o.source.trim()) { o.state = 'error'; o.msg = 'File khaali hai'; }
+      else if (isPdf && o.source.replace(/===== PAGE \d+ =====/g, '').length < 200) { o.msg = 'Selectable text bahut kam (scanned PDF?)'; detectFile(o); }
+      else { o.msg = o.source.split('\n').length + ' lines • detecting…'; detectFile(o); }
+    } catch (err) { o.state = 'error'; o.msg = 'Read fail: ' + (err.message || 'error'); }
+    renderList();
+  }
+  e.target.value = '';
+  setStatus(`${files.length} file(s) ready. “Translate All Files” dabayein.`, 'good');
+  $('details').textContent = 'Har file ki source language alag auto-detect hoti hai (ya From dropdown se sab ke liye ek language chunein).';
+});
+function save(blob, name) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+const outName = o => `${o.base}_${o.tl || lastTL}.txt`;
+const saveTxt = o => save(new Blob([o.out], { type: 'text/plain;charset=utf-8' }), outName(o));
+// ---- minimal ZIP writer (no library, works offline; UTF-8 file names) ----
+const CRCT = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+const crc32 = b => { let c = -1; for (let i = 0; i < b.length; i++) c = CRCT[(c ^ b[i]) & 255] ^ (c >>> 8); return (~c) >>> 0; };
+function makeZip(entries) {
+  const te = new TextEncoder(), parts = [], cd = []; let off = 0;
+  const d = new Date(), dt = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1), dd = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  for (const e of entries) {
+    const nm = te.encode(e.name), crc = crc32(e.data), sz = e.data.length;
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(10, dt, true); lh.setUint16(12, dd, true);
+    lh.setUint32(14, crc, true); lh.setUint32(18, sz, true); lh.setUint32(22, sz, true); lh.setUint16(26, nm.length, true);
+    parts.push(new Uint8Array(lh.buffer), nm, e.data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(12, dt, true); ch.setUint16(14, dd, true);
+    ch.setUint32(16, crc, true); ch.setUint32(20, sz, true); ch.setUint32(24, sz, true); ch.setUint16(28, nm.length, true); ch.setUint32(42, off, true);
+    cd.push(new Uint8Array(ch.buffer), nm); off += 30 + nm.length + sz;
+  }
+  const size = cd.reduce((s, x) => s + x.length, 0), end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, entries.length, true); end.setUint16(10, entries.length, true); end.setUint32(12, size, true); end.setUint32(16, off, true);
+  return new Blob([...parts, ...cd, new Uint8Array(end.buffer)], { type: 'application/zip' });
+}
+const L = `Indian|hi:Hindi (हिन्दी),bn:Bengali (বাংলা),te:Telugu (తెలుగు),mr:Marathi (मराठी),ta:Tamil (தமிழ்),gu:Gujarati (ગુજરાતી),ur:Urdu (اردو),kn:Kannada (ಕನ್ನಡ),ml:Malayalam (മലയാളം),pa:Punjabi (ਪੰਜਾਬੀ),or:Odia (ଓଡ଼ିଆ),as:Assamese (অসমীয়া),ne:Nepali (नेपाली),sa:Sanskrit (संस्कृतम्),sd:Sindhi,gom:Konkani,mai:Maithili,doi:Dogri,bho:Bhojpuri,mni-Mtei:Manipuri (Meiteilon),si:Sinhala
+World|af:Afrikaans,sq:Albanian,am:Amharic,ar:Arabic,hy:Armenian,ay:Aymara,az:Azerbaijani,bm:Bambara,eu:Basque,be:Belarusian,bs:Bosnian,bg:Bulgarian,ca:Catalan,ceb:Cebuano,ny:Chichewa,zh-CN:Chinese (Simplified),zh-TW:Chinese (Traditional),co:Corsican,hr:Croatian,cs:Czech,da:Danish,dv:Dhivehi,nl:Dutch,en:English,eo:Esperanto,et:Estonian,ee:Ewe,tl:Filipino,fi:Finnish,fr:French,fy:Frisian,gl:Galician,ka:Georgian,de:German,el:Greek,gn:Guarani,ht:Haitian Creole,ha:Hausa,haw:Hawaiian,iw:Hebrew,hmn:Hmong,hu:Hungarian,is:Icelandic,ig:Igbo,ilo:Ilocano,id:Indonesian,ga:Irish,it:Italian,ja:Japanese,jw:Javanese,kk:Kazakh,km:Khmer,rw:Kinyarwanda,kri:Krio,ko:Korean,ku:Kurdish (Kurmanji),ky:Kyrgyz,lo:Lao,la:Latin,lv:Latvian,ln:Lingala,lt:Lithuanian,lg:Luganda,lb:Luxembourgish,mk:Macedonian,mg:Malagasy,ms:Malay,mt:Maltese,mi:Maori,mn:Mongolian,my:Myanmar (Burmese),no:Norwegian,om:Oromo,ps:Pashto,fa:Persian,pl:Polish,pt:Portuguese,qu:Quechua,ro:Romanian,ru:Russian,sm:Samoan,gd:Scots Gaelic,sr:Serbian,st:Sesotho,sn:Shona,sk:Slovak,sl:Slovenian,so:Somali,es:Spanish,su:Sundanese,sw:Swahili,sv:Swedish,tg:Tajik,tt:Tatar,th:Thai,ti:Tigrinya,tr:Turkish,tk:Turkmen,ak:Twi,uk:Ukrainian,ug:Uyghur,uz:Uzbek,vi:Vietnamese,cy:Welsh,xh:Xhosa,yi:Yiddish,yo:Yoruba,zu:Zulu`;
+const NAME = {}; let optS = '<option value="auto">🔍 Auto-detect (apne aap)</option>', optT = '';
+L.split('\n').forEach(g => {
+  const [gn, items] = g.split('|'); let h = `<optgroup label="${gn}">`;
+  items.split(',').forEach(it => { const i = it.indexOf(':'), c = it.slice(0, i), n = it.slice(i + 1); NAME[c] = n; h += `<option value="${c}">${n}</option>`; });
+  h += '</optgroup>'; optS += h; optT += h;
+});
+$('sl').innerHTML = optS; $('tl').innerHTML = optT; $('tl').value = 'hi';
+const RTL = new Set('ar ur fa iw ps sd ug ku dv yi'.split(' '));
+const SCRIPTS = {'Noto Sans Devanagari':'hi mr ne sa gom mai doi bho','Noto Sans Bengali':'bn as','Noto Sans Tamil':'ta','Noto Sans Telugu':'te','Noto Sans Kannada':'kn','Noto Sans Malayalam':'ml','Noto Sans Gujarati':'gu','Noto Sans Gurmukhi':'pa','Noto Sans Oriya':'or','Noto Sans Sinhala':'si','Noto Naskh Arabic':'ar fa ps sd ug ku','Noto Nastaliq Urdu':'ur','Noto Sans Hebrew':'iw yi','Noto Sans Thai':'th','Noto Sans Lao':'lo','Noto Sans Khmer':'km','Noto Sans Myanmar':'my','Noto Sans Georgian':'ka','Noto Sans Armenian':'hy','Noto Sans Ethiopic':'am ti','Noto Sans JP':'ja','Noto Sans KR':'ko','Noto Sans SC':'zh-CN','Noto Sans TC':'zh-TW','Noto Sans Meetei Mayek':'mni-Mtei','Noto Sans Thaana':'dv'};
+const fontFor = c => Object.keys(SCRIPTS).find(k => SCRIPTS[k].split(' ').includes(c)) || 'Noto Sans';
+const norm = c => ({he:'iw',fil:'tl',zh:'zh-CN','zh-Hans':'zh-CN','zh-Hant':'zh-TW',nb:'no',jv:'jw'}[c] || c);
+const nameOf = c => NAME[c] || c;
+let SL = 'auto', TL = 'hi', lastTL = 'hi', detectedSL = '';
+
+const MARKER = 'ZXQKEEP';
+const SEP = 'ZXQLINESEPZX';
+const SEPRE = /\s*Z\s*X\s*Q\s*L\s*I\s*N\s*E\s*S\s*E\s*P\s*Z\s*X\s*/gi;
+const ENC_LIMIT = 5500;   // URL-encoded size per request (safe for non-Latin scripts too)
+const CONCURRENCY = 3;
+const enc = s => encodeURIComponent(s).length;
+
+function isEmojiOnly(line) {
+  const t = line.trim();
+  return !!t && /^[😂🤣😅😊😍❤️❤💯🔥⭐🌟👉❖➢■●○▪✅❌☑️✔️]+$/.test(t);
+}
+function prepareLine(line, tokenState) {
+  if (!line.trim() || isEmojiOnly(line)) return { text: line, fixed: true };
+  if (/^===== PAGE \d+ =====$/.test(line.trim())) return { text: line, fixed: true };
+  const codeRow = line.trim();
+  if (/^(?:(?:[A-D])(?:\s*[–—-]\s*[A-D])+|(?:i|ii|iii|iv|v|vi|vii|viii|ix|x)(?:\s+(?:i|ii|iii|iv|v|vi|vii|viii|ix|x)){1,7})$/i.test(codeRow)) return { text: line, fixed: true };
+  // pure numbers / symbols / punctuation need no translation
+  if (!/\p{L}/u.test(line)) return { text: line, fixed: true };
+
+  const ws = line.match(/^\s*/)?.[0] || '';
+  const tail = line.match(/\s*$/)?.[0] || '';
+  let core = line.slice(ws.length, line.length - tail.length);
+  let prefix = '';
+  let m = core.match(/^(Q\s*\d+\.\s*)(.*)$/i);
+  if (m) { prefix = m[1]; core = m[2]; }
+  else {
+    m = core.match(/^(Ex\s*:\s*)(.*)$/i);
+    if (m) { prefix = m[1]; core = m[2]; }
+    else {
+      m = core.match(/^((?:\([A-Da-d]\)|[A-Da-d][.)])\s+)(.*)$/);
+      if (m && m[2].trim()) { prefix = m[1]; core = m[2]; }
+    }
+  }
+  const tokens = [];
+  const protect = value => {
+    const key = MARKER + String(tokenState.next++).padStart(5, '0') + 'XZ';
+    tokens.push([key, value]);
+    return key;
+  };
+  core = core.replace(/https?:\/\/\S+|[\w.+-]+@[\w-]+\.[\w.-]+/g, protect);   // URLs / emails
+  core = core.replace(/✅|❌|😂|🤣|😅|👉|❖|➢|■|●|○|▪|☑️|✔️/g, protect);
+  core = core.replace(/\([A-Da-d]\)/g, protect);
+  core = core.replace(/(^|\s)(Q\s*\d+\.|Ex:)(?=\s)/gi, (whole, before, label) => before + protect(label));
+  if (!core.trim()) return { text: line, fixed: true };
+  return { text: core, fixed: false, ws, prefix, tail, tokens };
+}
+function restore(s, tokens) {
+  if (!tokens || !tokens.length) return s;
+  const map = new Map(tokens);
+  // tolerant: translator may insert spaces inside the marker
+  return s.replace(/ZXQKEEP\s*((?:\d\s*){5})\s*XZ/gi, (w, d) => { const k = 'ZXQKEEP' + d.replace(/\s/g, '') + 'XZ'; return map.has(k) ? map.get(k) : ''; });
+}
+function makeBatches(lines) {
+  const batches = []; let batch = [], length = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const item = lines[i];
+    const n = item.fixed ? 0 : enc(item.text) + enc(SEP) + 6;
+    if (batch.length && length + n > ENC_LIMIT) { batches.push(batch); batch = []; length = 0; }
+    batch.push({ index: i, item }); length += n;
+  }
+  if (batch.length) batches.push(batch);
+  return batches;
+}
+async function gt(q, sl) {
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${TL}&dt=t&q=` + encodeURIComponent(q);
+  let err;
+  for (let a = 0; a < 4; a++) {
+    if (stopRequested) throw new Error('STOPPED');
+    try {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error('Translation service HTTP ' + r.status);
+      const d = await r.json();
+      if (!Array.isArray(d) || !Array.isArray(d[0])) throw new Error('Unexpected translation response');
+      return { text: d[0].map(x => (x && x[0]) || '').join(''), det: d[2] };
+    } catch (e) { err = e; await new Promise(res => setTimeout(res, 600 * (a + 1) ** 2)); }
+  }
+  throw err;
+}
+function splitBig(s) {
+  if (enc(s) <= ENC_LIMIT) return [s];
+  let cut = s.lastIndexOf(' ', s.length >> 1); if (cut < 1) cut = s.length >> 1;
+  return [...splitBig(s.slice(0, cut)), ...splitBig(s.slice(cut))];
+}
+function chunkLong(t) {
+  const out = []; let cur = '';
+  for (const p of t.split(/(?<=[.!?।॥။។。！？؟…])\s*/u).filter(Boolean).flatMap(splitBig)) {
+    if (cur && enc(cur + ' ' + p) > ENC_LIMIT) { out.push(cur); cur = p; } else cur = cur ? cur + ' ' + p : p;
+  }
+  if (cur) out.push(cur); return out;
+}
+async function translateOne(item) {
+  let out;
+  if (enc(item.text) <= ENC_LIMIT) out = (await gt(item.text, SL)).text;
+  else { const parts = []; for (const c of chunkLong(item.text)) parts.push((await gt(c, SL)).text); out = parts.join(' '); }
+  return restore(out, item.tokens);
+}
+// Batch → if the separator count does not match, split the batch in halves (down to single lines): accuracy over speed.
+async function translateItems(items) {
+  if (!items.length) return [];
+  if (items.length === 1) return [await translateOne(items[0])];
+  const payload = items.map(i => i.text).join('\n' + SEP + '\n');
+  if (enc(payload) <= ENC_LIMIT) {
+    const { text } = await gt(payload, SL);
+    const p = text.split(SEPRE).map(x => x.trim());
+    if (p.length === items.length && p.every(x => x)) return p.map((x, i) => restore(x, items[i].tokens));
+  }
+  const m = items.length >> 1;
+  return [...await translateItems(items.slice(0, m)), ...await translateItems(items.slice(m))];
+}
+async function detect(txt) {
+  const s = txt.split('\n').filter(l => /\p{L}/u.test(l) && !/^===== PAGE/.test(l.trim())).join(' ');
+  const h = s.length >> 1;
+  const sample = (s.length > 1500 ? s.slice(0, 500) + ' ' + s.slice(h, h + 500) + ' ' + s.slice(-500) : s).slice(0, 1500);
+  TL = $('tl').value;
+  return norm((await gt(sample, 'auto')).det || '');
+}
+$('swap').addEventListener('click', () => {
+  const a = $('sl').value === 'auto' ? (files[cur] || {}).det : $('sl').value;
+  const b = $('tl').value;
+  if (!a || !NAME[a]) { setStatus('Swap ke liye pehle source language detect/select honi chahiye.', 'warning'); return; }
+  $('sl').value = b; $('tl').value = a;
+});
+$('tl').addEventListener('change', () => { $('preview').dir = RTL.has($('tl').value) ? 'rtl' : 'ltr'; });
+
+async function translateFile(o, fi, n) {
+  const lines = o.source.split('\n');
+  SL = $('sl').value;
+  if (SL === 'auto') { if (!o.det) { try { o.det = await detect(o.source); } catch (e) {} } SL = o.det || 'auto'; }
+  if (SL === TL) { o.state = 'skipped'; o.out = ''; o.msg = `Already ${nameOf(TL)} — skipped`; return; }
+  o.state = 'running'; o.out = ''; o.tl = TL; o.pct = 0; cur = fi; updatePreview();
+  const prepared = lines.map(line => prepareLine(line, { next: 0 }));
+  // note: token numbers are per-file; each file is processed on its own
+  const batches = makeBatches(prepared), output = new Array(lines.length);
+  let nextBatch = 0, done = 0, failures = 0;
+  async function worker() {
+    while (true) {
+      if (stopRequested) return;
+      const bi = nextBatch++; if (bi >= batches.length) return;
+      const batch = batches[bi], act = batch.filter(b => !b.item.fixed);
+      try {
+        const res = await translateItems(act.map(b => b.item));
+        act.forEach((b, j) => { output[b.index] = b.item.ws + b.item.prefix + (res[j] || b.item.text) + b.item.tail; });
+      } catch (e) {
+        if (e.message === 'STOPPED') return;
+        failures++; act.forEach(b => { output[b.index] = lines[b.index]; });
+      }
+      batch.forEach(b => { if (b.item.fixed) output[b.index] = b.item.text; done++; });
+      o.out = output.map((v, i) => v === undefined ? lines[i] : v).join('\n');
+      o.pct = done / lines.length * 100; o.msg = `${nameOf(SL)} → ${nameOf(TL)} • ${Math.round(o.pct)}%`;
+      if (cur === fi) updatePreview();
+      $('bar').style.width = ((fi + done / lines.length) / n * 100) + '%';
+      renderList();
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, batches.length) }, () => worker()));
+  o.out = output.map((v, i) => v === undefined ? lines[i] : v).join('\n');
+  o.state = stopRequested ? 'stopped' : failures ? 'partial' : 'done';
+  o.pct = stopRequested ? o.pct : 100;
+  o.msg = stopRequested ? 'Stopped (partial)' : failures ? `Done, ${failures} batch(es) original rakhi` : `✔ ${nameOf(SL)} → ${nameOf(TL)}`;
+  if (cur === fi) updatePreview();
+}
+$('start').addEventListener('click', async () => {
+  if (batchRunning) return;
+  batchRunning = true; stopRequested = false; TL = $('tl').value; lastTL = TL;
+  $('preview').dir = RTL.has(TL) ? 'rtl' : 'ltr'; $('bar').style.width = '0%';
+  const todo = files.map((f, i) => [f, i]).filter(([f]) => f.source && f.state !== 'error');
+  todo.forEach(([f]) => { f.state = 'queued'; f.msg = 'Queue mein'; f.pct = 0; f.out = ''; });
+  renderList();
+  let k = 0;
+  for (const [o, fi] of todo) {
+    if (stopRequested) { o.state = 'ready'; o.msg = 'Not started'; continue; }
+    setStatus(`File ${++k}/${todo.length}: ${o.name}`);
+    try { await translateFile(o, fi, todo.length); }
+    catch (e) { o.state = 'error'; o.msg = 'Error: ' + (e.message || e); }
+    renderList();
+  }
+  batchRunning = false;
+  const c = s => files.filter(f => f.state === s).length;
+  $('bar').style.width = stopRequested ? $('bar').style.width : '100%';
+  setStatus(stopRequested ? 'Stopped. Jo files ho chuki hain unhe download kar sakte hain.' : `Complete! ✔ ${c('done') + c('partial')} done` + (c('skipped') ? ` • ${c('skipped')} skipped (already target language)` : '') + (c('error') ? ` • ${c('error')} failed` : ''), stopRequested || c('error') ? 'warning' : 'good');
+  $('details').textContent = 'Row ke TXT/PDF buttons, “Download All TXT” ya ZIP se output save karein.';
+  updatePreview(); renderList();
+});
+$('stop').addEventListener('click', () => {
+  stopRequested = true;
+  setStatus('Stop request bhej di gayi hai; current request complete hote hi rukega.', 'warning');
+});
+$('download').addEventListener('click', async () => {
+  for (const f of files.filter(f => f.out)) { saveTxt(f); await new Promise(r => setTimeout(r, 500)); }
+});
+$('downloadZip').addEventListener('click', () => {
+  const te = new TextEncoder(), used = new Set(), entries = [];
+  for (const f of files.filter(f => f.out)) {
+    let n = outName(f), i = 1; while (used.has(n)) n = outName(f).replace(/\.txt$/, `_${++i}.txt`);
+    used.add(n); entries.push({ name: n, data: te.encode(f.out) });
+  }
+  if (!entries.length) return;
+  const d = new Date(), p = x => String(x).padStart(2, '0');
+  save(makeZip(entries), `Translated_${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}.zip`);
+});
+$('downloadPdf').addEventListener('click', () => { if (files[cur]) openPdf(files[cur]); });
+function openPdf(o) {
+  const text = o.out || '';
+  if (!text.trim()) { setStatus('Pehle translation complete karein.', 'warning'); return; }
+  const win = window.open('', '_blank');
+  if (!win) { setStatus('PDF window block ho gayi. Pop-ups allow karke dobara try karein.', 'warning'); return; }
+  const tl = o.tl || lastTL, F = fontFor(tl), dir = RTL.has(tl) ? 'rtl' : 'ltr';
+  const safeText = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const title = esc(o.base + '_' + tl);
+  win.document.open();
+  win.document.write(`<!doctype html><html lang="${tl}"><head><meta charset="utf-8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=${F.replace(/ /g,'+')}&display=swap"><title>${title}</title><style>
+    @page { size: A4; margin: 15mm; }
+    body { color:#111; background:#fff; font-family:"${F}", "Noto Sans", "Nirmala UI", Mangal, "Arial Unicode MS", sans-serif; }
+    pre { white-space:pre-wrap; overflow-wrap:anywhere; font-family:inherit; font-size:10pt; line-height:1.45; margin:0; }
+    .hint { font: 10pt Arial,sans-serif; color:#555; margin:0 0 12px; padding:8px; border:1px solid #ccc; }
+    @media print { .hint { display:none; } }
+  </style></head><body><div class="hint">Print dialog mein Destination: <b>Save as PDF</b> select karein, phir Save dabayein.</div><pre dir="${dir}">${safeText}</pre><script>window.onload=()=>(document.fonts?document.fonts.ready:Promise.resolve()).then(()=>setTimeout(()=>window.print(),600));<\/script></body></html>`);
+  win.document.close();
+}
+$('reset').addEventListener('click', () => {
+  if (batchRunning) stopRequested = true;
+  files = []; cur = -1; $('file').value = ''; $('preview').value = '';
+  $('bar').style.width = '0%'; $('counts').textContent = '0 lines'; $('detected').textContent = '';
+  setStatus('Pehle apni .txt ya .pdf files select karein.');
+  $('details').textContent = 'Translation ke liye internet chahiye. Free public translation service kabhi-kabhi rate-limit ho sakti hai.';
+  renderList();
+});
+renderList();
+</script>
+</body>
+</html>
