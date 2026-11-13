@@ -43,3 +43,15 @@ export function onBackButton(handler) {
   if (!isNative()) return;
   App.addListener('backButton', () => handler(() => App.exitApp()));
 }
+
+/** Share a generated file. On browsers without file sharing, download it instead. */
+export async function shareFile(name, data, mime = 'text/plain') {
+  const blob = data instanceof Blob ? data : new Blob([data], { type: mime });
+  if (isNative()) return saveFile(name, blob, mime);
+  const file = new File([blob], name, { type: mime });
+  if (navigator.canShare?.({ files: [file] }) && navigator.share) {
+    await navigator.share({ files: [file], title: name });
+    return { where: 'share sheet' };
+  }
+  return saveFile(name, blob, mime);
+}

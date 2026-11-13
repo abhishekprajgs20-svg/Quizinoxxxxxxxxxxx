@@ -111,3 +111,14 @@ body.in-quiz .mobile-nav{display:none}
  .hero-logo{width:120px;height:120px}
  .mobile-nav button{min-width:46px}
 }
+/* Result exports: compact, visible immediately below the score summary. */
+.artifact-panel{margin:16px 0 18px;border-color:#3b5680;background:linear-gradient(145deg,#172943,#111d2e)}
+.artifact-panel .form-grid{margin:12px 0}
+.artifact-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}
+.artifact-item{border:1px solid #2c405d;background:#101b2b;border-radius:12px;padding:12px;display:grid;gap:10px;min-width:0}
+.artifact-item>b{font-size:11px;color:#dce8fb}
+.artifact-item>div{display:flex;gap:7px;flex-wrap:wrap}
+.artifact-item button{font-size:10px;padding:9px 11px}
+.artifact-panel>.dialog-actions{display:flex;gap:7px;flex-wrap:wrap}
+.artifact-panel>.dialog-actions button{font-size:10px}
+@media(max-width:650px){.artifact-grid{grid-template-columns:1fr}.artifact-item>div button{flex:1}}

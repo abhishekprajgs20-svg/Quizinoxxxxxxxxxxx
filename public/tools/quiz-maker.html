@@ -1628,6 +1628,12 @@ const orig=sbq;sbq=function(){orig();try{const rows=qd.sec.map(function(){return
         
         function triggerHtmlDownload(quiz) {
             const htmlContent = generatePlayableHtml(quiz);
+            // QUIZINOX embeds this original tool and captures its real generated HTML.
+            // When opened standalone, keep the tool's normal direct-download behaviour.
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'QUIZINOX_GENERATED_HTML', html: htmlContent, name: quiz.name }, '*');
+                return;
+            }
             const blob = new Blob([htmlContent], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
